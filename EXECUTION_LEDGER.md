@@ -1,7 +1,7 @@
 # EXECUTION_LEDGER.md
 
 **Status:** 📝 In Progress  
-**Authority:** Manus
+**Authority:** Founder (content maintained by Manus operators)
 
 ---
 

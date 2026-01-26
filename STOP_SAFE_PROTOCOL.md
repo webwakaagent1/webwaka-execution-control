@@ -17,7 +17,7 @@ Any operator (Manus or human) may trigger a STOP-SAFE condition if they detect a
 
 - **Critical Bug:** A bug that causes data corruption, security vulnerabilities, or system instability.
 - **Security Vulnerability:** Any potential for unauthorized access, data leakage, or denial of service.
-- **Contradiction with Foundational Assumptions:** Any deviation from the 10 canonically locked assumptions.
+- **Contradiction with Foundational Assumptions:** Any deviation from the 15 canonically locked assumptions.
 - **Governance Violation:** Any violation of the rules defined in `GOVERNANCE.md`.
 - **Unforeseen Technical Debt:** Discovery of a design flaw that will create significant future problems.
 - **Loss of Confidence:** If an operator loses confidence in the current execution path for any reason.

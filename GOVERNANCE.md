@@ -43,6 +43,11 @@ This rule applies:
 
 **Failure to comply = execution failure.**
 
+**Recommended Technical Enforcement:**
+- Implement a pre-commit Git hook that checks for uncommitted changes before allowing a `git push`
+- This ensures the Absolute State Persistence Rule is automatically enforced
+- See `REPOSITORY_STANDARDS.md` for implementation details
+
 ### 1.3. Phase Sequencing
 
 **Phases MUST be executed sequentially. No skipping. No parallel execution.**

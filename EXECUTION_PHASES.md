@@ -93,21 +93,21 @@ This document defines the **strictly sequential execution phases** for the WebWa
 14. PWA Manifest + Install Prompt
 15. Extensibility Framework (Plug-in system)
 
-**Exit Criteria:**
-1. All AWS services are provisioned and configured
-2. Authentication flow works end-to-end
-3. Backend API is deployed and accessible
-4. Frontend is deployed and accessible
-5. Email and push notifications work
-6. File upload and delivery work
-7. Event-driven architecture is functional
-8. AI orchestration layer can invoke at least one model
-9. PWA is installable and works offline
-10. A basic plug-in can be loaded
-11. All tests pass (unit, integration, E2E)
-12. All documentation is complete
-13. Independent verification passes (no CRITICAL or HIGH findings)
-14. Founder approval is granted
+**Exit Criteria (SMART - Specific, Measurable, Achievable, Relevant, Time-bound):**
+1. **AWS Infrastructure:** All 12 AWS services (Cognito, Aurora, Fargate, Amplify, SES, SNS, S3, CloudFront, EventBridge, SQS, Bedrock, Secrets Manager) are provisioned, configured, and verified via AWS Console
+2. **Authentication:** User can register, log in, log out, and reset password via Cognito; JWT tokens are validated on all API requests; session management works correctly
+3. **Backend API:** At least 5 core API endpoints (auth, health check, user profile, tenant context, event publish) are deployed to Fargate, return correct responses, and have response times < 500ms
+4. **Frontend:** PWA is deployed to Amplify, accessible via HTTPS, loads in < 3 seconds, and passes Lighthouse PWA audit with score ≥ 90
+5. **Email & Notifications:** SES can send transactional emails (registration, password reset); SNS can send push notifications; delivery rate ≥ 95%
+6. **File Storage:** S3 can accept file uploads; CloudFront can serve files; upload and download work for files up to 100MB
+7. **Event-Driven Architecture:** EventBridge can receive and route events; SQS can queue and process events; at least 3 event types are defined and working
+8. **AI Orchestration:** AI orchestration layer can invoke at least one model (e.g., Bedrock Claude); API response time < 5 seconds; error handling works correctly
+9. **PWA & Offline:** PWA is installable on mobile and desktop; service worker caches critical assets; at least 3 core actions work offline (e.g., view contacts, create lead, view inventory)
+10. **Extensibility:** Plug-in system can load, initialize, and execute at least one basic plug-in; plug-in API is documented
+11. **Test Coverage:** Unit test coverage ≥ 80% for all new code; integration tests cover all API endpoints; E2E tests cover critical user flows (register, login, create tenant)
+12. **Documentation:** README.md, API documentation, deployment guide, and architecture diagrams are complete and accurate
+13. **Independent Verification:** Independent verification report shows zero CRITICAL findings and zero HIGH findings
+14. **Founder Approval:** Founder has reviewed the verification report and granted explicit approval via signed commit or GitHub issue comment
 
 **Verification Method:** Code phase verification (see VERIFICATION_STRATEGY.md Section 3.2)
 
@@ -145,15 +145,15 @@ This document defines the **strictly sequential execution phases** for the WebWa
 4. Hierarchical permissions
 5. Tenant-scoped identity
 
-**Exit Criteria:**
-1. Partners can create sub-partners and tenants
-2. Roles and permissions can be assigned at all levels
-3. Users can be created and managed within tenants
-4. Permissions are enforced correctly at all levels
-5. All tests pass (unit, integration, E2E)
-6. All documentation is complete
-7. Independent verification passes (no CRITICAL or HIGH findings)
-8. Founder approval is granted
+**Exit Criteria (SMART):**
+1. **Partner Hierarchy:** Partners can create sub-partners and tenants; closure table correctly represents hierarchy; queries for "all descendants" and "all ancestors" work correctly and return in < 100ms
+2. **RBAC System:** At least 10 predefined roles exist (Super Admin, Partner Admin, Tenant Admin, User, etc.); custom roles can be created; permissions can be assigned at all levels
+3. **User Management:** Users can be created, updated, and deleted within tenants; user data is correctly scoped to tenant; cross-tenant data leakage is prevented (verified via security audit)
+4. **Permission Enforcement:** All API endpoints enforce permissions; unauthorized access returns 403; permission checks are tested for all roles and resources
+5. **Test Coverage:** Unit test coverage ≥ 85% for IAM module; integration tests cover all permission scenarios; E2E tests cover user creation, role assignment, and permission enforcement
+6. **Documentation:** IAM architecture diagram, RBAC model documentation, and API documentation are complete
+7. **Independent Verification:** Independent verification report shows zero CRITICAL findings and zero HIGH findings
+8. **Founder Approval:** Founder has reviewed the verification report and granted explicit approval
 
 **Verification Method:** Code phase verification
 
@@ -183,16 +183,16 @@ This document defines the **strictly sequential execution phases** for the WebWa
 8. Site Builder Primitive (Drag-and-drop site builder)
 9. Reporting & Analytics Primitive (Dashboards, Reports)
 
-**Exit Criteria:**
-1. All core primitives are functional
-2. All primitives can be used recursively (Super Admin → Partner → Client → User)
-3. All primitives integrate with AI orchestration layer
-4. All primitives integrate with event-driven architecture
-5. All primitives work offline (where applicable)
-6. All tests pass (unit, integration, E2E)
-7. All documentation is complete
-8. Independent verification passes (no CRITICAL or HIGH findings)
-9. Founder approval is granted
+**Exit Criteria (SMART):**
+1. **Primitive Functionality:** All 9 core primitives (CRM, Automation, Communication, Forms, Calendar, Billing, Affiliate, Site Builder, Reporting) are functional and can perform their core operations
+2. **Recursive Usage:** All primitives can be used at all levels (Super Admin → Partner → Tenant → User); tenant-scoped data is correctly isolated; RLS is enforced
+3. **AI Integration:** All primitives can invoke AI orchestration layer for at least one use case (e.g., CRM can generate contact summaries; Automation can generate workflow suggestions)
+4. **Event Integration:** All primitives emit events to EventBridge; at least 20 event types are defined; event-driven workflows work correctly
+5. **Offline Support:** At least 5 core actions per primitive work offline (where applicable); offline data syncs correctly when online; conflict resolution works
+6. **Test Coverage:** Unit test coverage ≥ 85% for all primitives; integration tests cover all primitive interactions; E2E tests cover critical user flows for each primitive
+7. **Documentation:** Architecture diagrams, API documentation, and user guides are complete for all primitives
+8. **Independent Verification:** Independent verification report shows zero CRITICAL findings and zero HIGH findings
+9. **Founder Approval:** Founder has reviewed the verification report and granted explicit approval
 
 **Verification Method:** Code phase verification
 
@@ -217,15 +217,15 @@ This document defines the **strictly sequential execution phases** for the WebWa
 3. SVM Suite (Smart Vending Machine)
 4. MVM Suite (Micro-Vending Machine)
 
-**Exit Criteria:**
-1. All four commerce suites are functional
-2. All suites can be used by tenants
-3. All suites work offline
-4. All suites integrate with core primitives
-5. All tests pass (unit, integration, E2E)
-6. All documentation is complete
-7. Independent verification passes (no CRITICAL or HIGH findings)
-8. Founder approval is granted
+**Exit Criteria (SMART):**
+1. **Suite Functionality:** All 4 commerce suites (POS, ParkHub, SVM, MVM) are functional and can perform their core operations (e.g., POS can process sales; ParkHub can manage parking slots)
+2. **Tenant Usage:** Tenants can enable/disable suites; suite data is correctly scoped to tenant; cross-tenant data leakage is prevented
+3. **Offline Support:** All core actions work offline (e.g., POS can process sales offline; ParkHub can record parking entries offline); offline data syncs correctly when online
+4. **Primitive Integration:** All suites integrate with at least 5 core primitives (e.g., POS integrates with CRM, Billing, Reporting, Automation, Communication)
+5. **Test Coverage:** Unit test coverage ≥ 85% for all suites; integration tests cover all suite-primitive interactions; E2E tests cover critical user flows for each suite
+6. **Documentation:** User guides, API documentation, and setup instructions are complete for all suites
+7. **Independent Verification:** Independent verification report shows zero CRITICAL findings and zero HIGH findings
+8. **Founder Approval:** Founder has reviewed the verification report and granted explicit approval
 
 **Verification Method:** Code phase verification
 

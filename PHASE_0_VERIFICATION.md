@@ -36,7 +36,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| No contradictions between documents | ✅ | All documents reference the same 10 foundational assumptions |
+| No contradictions between documents | ✅ | All documents reference the same 15 foundational assumptions |
 | All documents reference the same execution phases | ✅ | Phases 0-5 defined consistently |
 | All documents use consistent terminology | ✅ | Partner, Tenant, Primitive, Recursive, etc. |
 | All documents enforce the same governance rules | ✅ | Founder authority, GitHub persistence, STOP-SAFE protocol |
