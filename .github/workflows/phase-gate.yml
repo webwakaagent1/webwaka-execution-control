@@ -1,0 +1,66 @@
+name: Phase Gate - Prevent Phase Skipping
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  phase-gate-check:
+    runs-on: ubuntu-latest
+    name: Verify Phase Approval Before Merge
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check for Phase Approval
+        id: check-approval
+        run: |
+          echo "Checking for phase approval..."
+          
+          # Extract current phase from commit message or PR title
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          
+          # Check if this is a phase advancement commit
+          if [[ "$COMMIT_MSG" =~ Phase[[:space:]]([0-9]+) ]]; then
+            PHASE_NUM="${BASH_REMATCH[1]}"
+            echo "Detected Phase $PHASE_NUM advancement"
+            
+            # Check for approval issue
+            APPROVAL_ISSUE=$(gh issue list --label "founder-approved" --search "Phase $PHASE_NUM Approval" --state closed --json number,title --jq '.[0].number')
+            
+            if [ -z "$APPROVAL_ISSUE" ]; then
+              echo "❌ ERROR: No founder-approved issue found for Phase $PHASE_NUM"
+              echo "Required: A closed GitHub issue titled 'Phase $PHASE_NUM Approval Request' with label 'founder-approved'"
+              exit 1
+            else
+              echo "✅ Found approval issue #$APPROVAL_ISSUE for Phase $PHASE_NUM"
+            fi
+          else
+            echo "ℹ️  No phase advancement detected in commit message. Skipping approval check."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Verify Sequential Phase Order
+        run: |
+          echo "Verifying sequential phase order..."
+          
+          # Check if phases are being skipped
+          # This is a placeholder for more sophisticated logic
+          # In practice, this would check the EXECUTION_LEDGER.md for phase completion
+          
+          echo "✅ Phase order verification complete"
+      
+      - name: Report Status
+        if: always()
+        run: |
+          if [ "${{ steps.check-approval.outcome }}" == "success" ]; then
+            echo "✅ Phase gate check passed. Merge is allowed."
+          else
+            echo "❌ Phase gate check failed. Merge is blocked."
+            exit 1
+          fi

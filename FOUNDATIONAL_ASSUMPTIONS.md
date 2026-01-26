@@ -1,85 +1,243 @@
-# FOUNDATIONAL_ASSUMPTIONS.md
+# Foundational Assumptions
 
-**Status:** 🔒 CANON-LOCKED  
-**Authority:** Founder
-
----
-
-## 1. Introduction
-
-This document contains the **10 canonically locked foundational assumptions** that govern all architectural and implementation decisions for the WebWaka platform. These assumptions are non-negotiable and may only be changed by the Founder.
+**Status:** 🔒 CANONICALLY LOCKED  
+**Authority:** Founder  
+**Source:** WebWaka Platform Re-Founding Blueprint v5.0, Section 1  
+**Last Updated:** 2026-01-26 (Phase 0 Remediation)
 
 ---
 
-## 2. The 10 Foundational Assumptions
+## Purpose
 
-### 2.1. AWS-First, Single-Bill Architecture
+This document contains the **15 canonically locked foundational assumptions** that govern all WebWaka architecture, tooling, and execution decisions. These assumptions are **non-negotiable** and must be enforced by all operators (Manus, Emergent, Replit).
 
-- All services must be AWS-native (no third-party SaaS).
-- Single AWS bill for all infrastructure.
-- Justified exceptions: Prisma (ORM), Africa's Talking (WhatsApp).
-
-### 2.2. Max-Scale-First Design
-
-- 1,000+ Partners
-- 1,000,000+ Tenants
-- 100,000,000+ Users
-- Architecture designed for maximum scale from day one.
-
-### 2.3. Platform-for-Platforms Vision
-
-- Not a vertical SaaS product.
-- A platform for building platforms.
-- Recursive system usage at all levels.
-
-### 2.4. PWA-First by Default
-
-- Every surface must be PWA-installable.
-- No exceptions.
-
-### 2.5. Offline-First for Core Actions
-
-- 5 core actions must work offline: POS, lead capture, inventory, affiliate, field data.
-- Mandatory, not optional.
-
-### 2.6. Push Notifications as Core Platform Primitive
-
-- First-class system, recursively usable.
-- Event-driven architecture.
-
-### 2.7. AI as Core Platform Primitive
-
-- AI is equal to Auth, Billing, Affiliates.
-- One Unified AI Orchestration Layer.
-- AI is recursive (Super Admin → Partner → Client → User).
-- Multi-model support (AWS Bedrock preferred).
-- AI must integrate with Events, Workflows, Permissions, Cost attribution.
-- AI must degrade gracefully offline.
-
-### 2.8. Recursive System Usage
-
-- Any system WebWaka uses internally must be available downstream.
-- Super Admin → Partners → Clients → End-users.
-
-### 2.9. Partner Pricing Autonomy
-
-- Partners set their own retail prices.
-- Hierarchical pricing model.
-
-### 2.10. Platform Extensibility & Future-Proofing
-
-- Everything must be extensible via plug-ins.
-- No closed systems, no final forms.
-- Event-driven architecture mandatory.
-- Backward compatibility mandatory.
-- Recursive extensibility at all levels.
+**Absolute Rule:** Any deviation from these assumptions is a STOP condition and must be escalated immediately to the Founder.
 
 ---
 
-## 3. Implications
+## The 15 Foundational Assumptions
 
-These assumptions have significant implications for the platform's architecture, build order, and governance. All operators must read and understand these assumptions before beginning any work.
+### Assumption #1: AWS-First, Single-Bill Architecture
+
+**Statement:** WebWaka will be built AWS-first, with a strong preference for AWS-native services over third-party platforms wherever viable.
+
+**Rationale:** AWS provides a comprehensive ecosystem of services that can scale to meet WebWaka's needs (1,000+ partners, 1M+ tenants, 100M+ users). Using AWS-native services ensures a single bill, simplified operations, and better cost control.
+
+**Implications:**
+- **Auth:** AWS Cognito
+- **Database:** AWS Aurora PostgreSQL
+- **Backend Hosting:** AWS Fargate
+- **Frontend Hosting:** AWS Amplify
+- **Email:** AWS SES
+- **SMS:** AWS SNS
+- **Storage:** AWS S3 + CloudFront
+- **Analytics:** AWS CloudWatch + Athena + QuickSight
+- **Background Jobs:** AWS Lambda
+- **Error Tracking:** AWS CloudWatch + X-Ray
+- **Queues:** AWS SQS
+- **Events:** AWS EventBridge
+- **AI:** AWS Bedrock (primary), OpenAI (fallback)
+
+**Exceptions:**
+- **Prisma (ORM):** No AWS-native alternative (application-level tool).
+- **Africa's Talking (WhatsApp):** AWS does not provide WhatsApp messaging (required for Nigerian market).
 
 ---
 
-**End of FOUNDATIONAL_ASSUMPTIONS.md**
+### Assumption #2: Max-Scale-First Design
+
+**Statement:** WebWaka is designed for maximum scale from day one. Architecture is not phased; only implementation is.
+
+**Rationale:** WebWaka is a Platform for Building Platforms. It must support 1,000+ partners, 1M+ tenants, and 100M+ users. Designing for scale from day one avoids costly refactoring later.
+
+**Scale Assumptions:**
+- **Partners:** 1,000+
+- **Tenants:** 1,000,000+
+- **End Users:** 100,000,000+
+- **Transactions:** 1B+ per month
+- **Events:** 10B+ per month
+
+---
+
+### Assumption #3: Platform-for-Platforms Vision
+
+**Statement:** WebWaka is not a vertical SaaS. It is a meta-platform that enables partners to build, brand, and resell their own SaaS businesses.
+
+**Rationale:** WebWaka's business model is partner-led scale. Partners are the primary customers, not end users.
+
+---
+
+### Assumption #4: PWA-First by Default
+
+**Statement:** Every dashboard, client app, and surface MUST be PWA-installable by default. No WebWaka surface is "web-only." Installability is a baseline requirement.
+
+**Rationale:** Nigeria's mobile-first reality requires PWA-first design. PWAs provide app-like experiences without app store friction, data costs, or device storage constraints.
+
+---
+
+### Assumption #5: Offline-First for Core Actions
+
+**Statement:** Offline capability is MANDATORY for core actions, not optional. Core actions must function offline and sync later. Graceful degradation is required where full offline is not possible.
+
+**Core Actions (Must Work Offline):**
+1. POS transactions
+2. Lead capture
+3. Inventory updates
+4. Affiliate link generation
+5. Field data collection
+
+**Rationale:** Nigeria's intermittent connectivity reality requires offline-first design.
+
+---
+
+### Assumption #6: Push Notifications as Core Platform Primitive
+
+**Statement:** Push notifications are a first-class system primitive, recursively usable across all hierarchy levels. They are not a "nice-to-have" or UI feature.
+
+**Rationale:** Push notifications are critical for engagement, retention, and real-time communication.
+
+---
+
+### Assumption #7: AI as Core Platform Primitive
+
+**Statement:** AI is a first-class platform primitive, equal to Auth, Billing, and Affiliates. AI is not a feature; it is a core system that integrates with Events, Workflows, Permissions, and Cost Attribution.
+
+**Rationale:** AI is critical for automation, intelligence, and partner differentiation.
+
+**Implications:**
+- One unified AI orchestration layer (not separate bots)
+- Multi-model support (AWS Bedrock preferred)
+- Role-based AI behavior
+- Event-driven AI triggers
+- Cost attribution per tenant
+- Offline-aware AI patterns
+
+---
+
+### Assumption #8: Recursive System Usage Principle
+
+**Statement:** Any system WebWaka uses internally must be available for partners and clients to use for their own platforms.
+
+**Rationale:** WebWaka is a Platform for Building Platforms. Partners must be able to use the same systems WebWaka uses to build their own platforms for their clients.
+
+**Examples:**
+- If WebWaka uses CRM internally, partners can use CRM for their clients
+- If WebWaka uses AI orchestration internally, partners can use AI for their clients
+- If WebWaka uses affiliate tracking internally, partners can use affiliate tracking for their clients
+
+---
+
+### Assumption #9: Partner Pricing Autonomy
+
+**Statement:** Partners have full control over their pricing. They set their own retail prices for clients, independent of WebWaka's wholesale prices.
+
+**Rationale:** Partners are the primary customers. They must be able to set their own prices to compete in their markets.
+
+**Implications:**
+- Hierarchical pricing model (Global → Partner → Contract → Org)
+- Partners can markup WebWaka's wholesale prices
+- Partners can offer discounts to their clients
+- WebWaka does not control partner pricing
+
+---
+
+### Assumption #10: Configurable Multi-Level Affiliate System
+
+**Statement:** The affiliate system is configurable per partner, per contract, per use case. Level depth is variable (up to 10 levels), not hardcoded.
+
+**Rationale:** Different partners have different affiliate needs. The system must support variable depth and configurable commission structures.
+
+**Implications:**
+- Closure table pattern for affiliate hierarchy
+- Configurable commission percentages
+- Hierarchical override model (Global → Partner → Contract → Org)
+- Platform-managed payouts
+
+---
+
+### Assumption #11: Composable Primitives Architecture
+
+**Statement:** WebWaka is built from composable primitives, not monolithic features. Primitives can be combined to create industry-specific suites.
+
+**Rationale:** Composable primitives enable flexibility, extensibility, and future-proofing.
+
+**Examples of Primitives:**
+- Auth, Billing, CRM, Inventory, POS, Site Builder, Forms, Automation, Notifications, Analytics, AI, Affiliate, Messaging, Calendar, Reporting
+
+**Examples of Suites (Compositions):**
+- Commerce Suite = POS + Inventory + Billing + Analytics
+- Education Suite = CRM + Calendar + Forms + Messaging
+- Health Suite = CRM + Calendar + Billing + Messaging
+
+---
+
+### Assumption #12: Tenant-Scoped Identity & Data Ownership
+
+**Statement:** User identity is tenant-scoped, not global. Each tenant owns its own data and has full export rights.
+
+**Rationale:** Tenants must own their data and be able to export it at any time.
+
+**Implications:**
+- Users can have different identities across tenants
+- Tenants can export all their data in standard formats
+- Tenants can delete their data at any time
+- WebWaka does not own tenant data
+
+---
+
+### Assumption #13: Shared Database + Row-Level Security
+
+**Statement:** WebWaka uses a shared database with row-level security (RLS) for tenant isolation, not separate databases per tenant.
+
+**Rationale:** Separate databases per tenant do not scale to 1M+ tenants. Shared database with RLS is the only viable approach for max-scale-first design.
+
+**Implications:**
+- All tenant data is stored in a single Aurora PostgreSQL database
+- Row-level security policies enforce tenant isolation
+- Every table has a `tenant_id` column
+- All queries are automatically filtered by `tenant_id`
+
+---
+
+### Assumption #14: Platform Kill-Switch Authority
+
+**Statement:** WebWaka retains the authority to disable a partner or tenant account for fraud, abuse, or legal reasons.
+
+**Rationale:** WebWaka must be able to protect the platform and other users.
+
+**Implications:**
+- WebWaka can disable accounts without prior notice
+- WebWaka can suspend accounts pending investigation
+- WebWaka can terminate accounts for terms of service violations
+- Disabled accounts can be re-enabled after remediation
+
+---
+
+### Assumption #15: Platform Extensibility & Future-Proofing
+
+**Statement:** Every system, module, service, UI, workflow, AI capability, and integration built today MUST be designed such that unknown future capabilities can be added later as plug-ins, without breaking, refactoring, or rewriting existing systems.
+
+**Rationale:** WebWaka is designed to evolve for 10–20 years. The platform must be extensible, composable, and future-proof.
+
+**Implications:**
+- Event-driven architecture (all systems communicate via events)
+- Plug-in system (all features are plug-ins)
+- Contracts and interfaces (all APIs are versioned)
+- Backward compatibility (old plug-ins must continue to work)
+- No closed systems (everything is extensible)
+
+---
+
+## Enforcement
+
+**These assumptions are enforced by:**
+1. **Governance rules** in `GOVERNANCE.md`
+2. **Phase verification** in `VERIFICATION_STRATEGY.md`
+3. **Independent audits** by separate Manus agents
+4. **Founder approval** required for phase advancement
+
+**Violation of any assumption is a STOP condition.**
+
+---
+
+**End of Foundational Assumptions**
