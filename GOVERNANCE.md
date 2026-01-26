@@ -1,125 +1,226 @@
-# GOVERNANCE.md
+# Governance
 
 **Status:** 🔒 CANON-LOCKED  
 **Authority:** Founder  
-**Operator:** Manus
+**Last Updated:** 2026-01-26 (Phase 0 Remediation)
 
 ---
 
-## 1. Core Principles
+## 1. Core Governance Rules
 
-This document defines the governance rules for the WebWaka execution system. All operators must adhere to these rules without exception.
+### 1.1. Decision Authority
 
-### 1.1. GitHub as Single Source of Truth
+**Founder:**
+- Approves or rejects phase completion
+- Approves or rejects architectural changes
+- Approves or rejects deviations from foundational assumptions
+- Final authority on all disputes
 
-- **All work must be in GitHub.** This includes code, documentation, plans, decisions, and reports.
-- **If it's not in GitHub, it doesn't exist.** No local-only files, no verbal agreements, no side-channel communications.
-- **The `main` branch is the only canonical truth.** All other branches are considered work in progress.
+**Manus (AI Operator):**
+- Implements within defined scope
+- Makes implementation decisions within foundational assumptions
+- Escalates architectural decisions not covered by the Blueprint
+- MUST stop if any foundational assumption is violated
 
 ### 1.2. Absolute State Persistence Rule
 
 ⚠️ **NOTHING MAY EVER REMAIN LOCAL**
 
-- At ANY pause, stop, context switch, or handover — ALL WORK MUST BE PUSHED TO GITHUB FIRST.
-- This is a non-negotiable invariant.
-- Failure to comply = execution failure.
+From this point forward:
 
-### 1.3. Strict Sequential Execution
+1. At ANY pause, stop, context switch, or handover — ALL WORK MUST BE PUSHED TO GITHUB FIRST.
+2. There must be NO uncommitted files, NO local-only drafts, NO "to be pushed later" work.
+3. GitHub is the only memory.
+4. If work is not in GitHub, it is considered non-existent.
 
-- Execution proceeds in strict sequential phases.
-- No phase may be skipped.
-- No phase may begin until the previous phase's exit criteria are met and approved.
+This rule applies:
+- Even if work is incomplete
+- Even if work is exploratory
+- Even if work is blocked
+- Even if you are awaiting approval
 
-### 1.4. Explicit Decision-Making
+📌 No reminders will be given. This is a standing invariant.
 
-- All decisions must be documented in the `EXECUTION_LEDGER.md` before implementation.
-- No operator may assume a decision that is not explicitly documented.
-- Decisions with long-term architectural impact must be escalated to the Founder for approval.
+**Failure to comply = execution failure.**
 
-### 1.5. Documentation as a Core Deliverable
+### 1.3. Phase Sequencing
 
-- Documentation is not an afterthought; it is a core deliverable of every phase.
-- All code must be accompanied by clear, concise documentation.
-- All architectural decisions must be justified in writing.
+**Phases MUST be executed sequentially. No skipping. No parallel execution.**
 
----
+**Phase Order:**
+1. Phase 0: Execution Control & Governance
+2. Phase 1: Core Infrastructure
+3. Phase 2: Platform Primitives
+4. Phase 3: Industry Suites
 
-## 2. Roles and Responsibilities
+**Phase Advancement Rules:**
+- Phase N+1 cannot begin until Phase N is complete
+- Phase N is not complete until Founder approval is granted
+- Phase N is not complete until independent verification passes
+- Phase N is not complete until all exit criteria are met
 
-### 2.1. Founder
+**Technical Enforcement:**
+- A GitHub Actions workflow (`phase-gate.yml`) enforces phase sequencing
+- Merges to `main` are blocked if phase approval is missing
+- See Section 2.1 for the approval process
 
-- **Authority:** The ultimate authority on all decisions.
-- **Responsibilities:**
-    - Approve or reject phase completion.
-    - Make final decisions on escalated issues.
-    - Set the overall vision and direction.
+### 1.4. Foundational Assumptions Enforcement
 
-### 2.2. Manus (and other AI Operators)
+**All 15 foundational assumptions are non-negotiable.**
 
-- **Operator:** The primary execution agent.
-- **Responsibilities:**
-    - Execute the tasks defined in each phase.
-    - Adhere to all governance rules.
-    - Document all work in GitHub.
-    - Escalate issues and decisions as required.
-    - Maintain the integrity of the execution system.
+**Enforcement Mechanisms:**
+1. **Governance rules** (this document)
+2. **Phase verification** (`VERIFICATION_STRATEGY.md`)
+3. **Independent audits** (separate Manus agents)
+4. **Founder approval** (required for phase advancement)
 
----
+**Violation of any assumption is a STOP condition.**
 
-## 3. Communication Protocol
+### 1.5. Operator Protocols
 
-### 3.1. Asynchronous by Default
+**Manus Operators:**
+- Read all governance documents before starting work
+- Read all foundational assumptions before starting work
+- Read the current phase definition before starting work
+- Update `EXECUTION_LEDGER.md` with all decisions and progress
+- Commit and push all work before any pause or stop
+- Escalate to Founder if blocked or uncertain
 
-- All communication should be asynchronous and documented in GitHub.
-- Use GitHub issues for bug reports, feature requests, and questions.
-- Use pull request comments for code review.
-- Use `EXECUTION_LEDGER.md` for decision-making.
+**Independent Verification Manus (IVM):**
+- Must be a different agent from the implementing Manus
+- Must not have participated in the implementation of the phase being verified
+- Must produce an independent verification report
+- Must identify all contradictions, gaps, and risks
+- Must recommend remediation for all findings
 
-### 3.2. Synchronous for Emergencies
+### 1.6. Independent Verification Requirement
 
-- Synchronous communication (e.g., chat) is reserved for emergencies only.
-- All synchronous communication must be summarized and documented in GitHub immediately afterward.
+**All phase completion verification reports must be generated by an independent Manus agent who had no role in the implementation of that phase.**
 
----
+This ensures unbiased auditing and prevents blind spots.
 
-## 4. Change Control Process
-
-### 4.1. All Changes via Pull Request
-
-- All changes to the `main` branch must be made via pull request.
-- No direct commits to `main` are allowed.
-
-### 4.2. Pull Request Requirements
-
-- All pull requests must include:
-    - A clear title and description.
-    - A link to the relevant issue or task.
-    - A summary of the changes made.
-    - Evidence of successful verification.
-
-### 4.3. Code Review
-
-- All pull requests must be reviewed and approved by at least one other operator (if applicable) or the Founder.
-- Code review should focus on:
-    - Adherence to coding standards.
-    - Correctness and completeness.
-    - Documentation quality.
-    - Performance and security.
+**Process:**
+1. Implementing Manus completes the phase and creates a self-assessment report
+2. Founder requests independent verification from a separate Manus agent (IVM)
+3. IVM reviews all artifacts and produces an independent verification report
+4. IVM identifies all findings (CRITICAL, HIGH, MEDIUM, LOW)
+5. Implementing Manus addresses all CRITICAL and HIGH findings
+6. Founder reviews the remediation and grants approval
 
 ---
 
-## 5. STOP-SAFE Protocol
+## 2. Phase Approval Process
 
-- Any operator may trigger a STOP-SAFE condition if they detect a problem.
-- See `STOP_SAFE_PROTOCOL.md` for details.
+### 2.1. Phase Approval Mechanism
+
+At the end of each phase, the Founder must provide explicit, verifiable approval before the next phase may begin.
+
+**Approval Steps:**
+
+1. **Manus creates a GitHub Issue** titled "Phase N Approval Request"
+2. The issue must include:
+   - Link to the phase verification report
+   - Link to the independent verification report (if applicable)
+   - Summary of deliverables
+   - Summary of exit criteria met
+3. **Founder reviews** the reports and all artifacts
+4. **If approved**, the Founder:
+   - Adds the label `founder-approved` to the issue
+   - Closes the issue with a comment: "APPROVED: Phase N is complete. Proceed to Phase N+1."
+5. **The approval is verified** by the phase-gate automation before Phase N+1 work can be merged to `main`
+
+**Non-Approval:**
+
+If the Founder does not approve, they must:
+- Add the label `founder-rejected`
+- Provide a list of required changes in the issue comments
+- The phase remains in "awaiting approval" status until all changes are addressed
+- Manus addresses the required changes and updates the issue
+- Process repeats until approval is granted
+
+### 2.2. Approval Verification
+
+**Technical Enforcement:**
+- A GitHub Actions workflow (`phase-gate.yml`) checks for approval before allowing merges to `main`
+- The workflow searches for a closed issue with:
+  - Title matching "Phase N Approval Request"
+  - Label `founder-approved`
+- If no approval is found, the merge is blocked
 
 ---
 
-## 6. Document Updates
+## 3. Escalation Process
 
-- This document may only be updated by the Founder.
-- All changes must be made via pull request and documented in the `EXECUTION_LEDGER.md`.
+### 3.1. When to Escalate
+
+**Manus MUST escalate to Founder if:**
+- Any foundational assumption is violated or unclear
+- Any architectural decision is not covered by the Blueprint
+- Any STOP condition is triggered
+- Any blocking issue is encountered
+- Any contradiction is discovered in the governance documents
+- Any phase cannot be completed due to missing information
+
+### 3.2. How to Escalate
+
+**Escalation Method:**
+1. Create a GitHub Issue with title "ESCALATION: [Brief Description]"
+2. Add the label `escalation`
+3. Include:
+   - Description of the issue
+   - Why it requires Founder decision
+   - Proposed options (if any)
+   - Impact of not resolving the issue
+4. Stop work on the current task until Founder responds
+
+**Founder Response:**
+- Founder reviews the escalation issue
+- Founder provides a decision in the issue comments
+- Founder closes the issue when resolved
+- Manus resumes work based on the Founder's decision
+
+### 3.3. Escalation Contact
+
+**Method:** GitHub Issues with label `escalation`  
+**Repository:** webwaka-execution-control  
+**Response Time:** Within 24-48 hours (target)
 
 ---
 
-**End of GOVERNANCE.md**
+## 4. Change Management
+
+### 4.1. Document Changes
+
+**All changes to governance documents must:**
+- Be committed to GitHub with a clear commit message
+- Be reviewed by the Founder (if significant)
+- Be logged in `EXECUTION_LEDGER.md`
+- Maintain backward compatibility (where possible)
+
+### 4.2. Architectural Changes
+
+**All architectural changes must:**
+- Be explicitly approved by the Founder
+- Be documented in the relevant section of the Blueprint
+- Be verified against all 15 foundational assumptions
+- Be communicated to all operators
+
+---
+
+## 5. Glossary
+
+**Complete:** A phase is complete when all exit criteria are met, independent verification passes, and Founder approval is granted.
+
+**Blocked:** A phase is blocked when it cannot proceed due to missing information, unresolved issues, or awaiting Founder decision.
+
+**STOP Condition:** A condition that requires immediate cessation of work and escalation to the Founder. See `STOP_SAFE_PROTOCOL.md` for details.
+
+**Foundational Assumption:** One of the 15 canonically locked architectural laws that govern all WebWaka decisions. See `FOUNDATIONAL_ASSUMPTIONS.md` for the full list.
+
+**Phase Gate:** A technical enforcement mechanism that prevents advancing to Phase N+1 until Phase N is formally approved.
+
+**Independent Verification:** An audit performed by a separate Manus agent who had no role in the implementation of the phase being verified.
+
+---
+
+**End of Governance**
