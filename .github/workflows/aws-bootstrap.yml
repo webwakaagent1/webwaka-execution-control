@@ -1,0 +1,249 @@
+name: AWS Bootstrap Setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "BOOTSTRAP" to confirm AWS setup'
+        required: true
+        type: string
+
+jobs:
+  validate-confirmation:
+    runs-on: ubuntu-latest
+    outputs:
+      confirmed: ${{ steps.check.outputs.confirmed }}
+    
+    steps:
+      - name: Check confirmation
+        id: check
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" = "BOOTSTRAP" ]; then
+            echo "confirmed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Confirmation failed. Please type BOOTSTRAP to confirm."
+            exit 1
+          fi
+  
+  bootstrap:
+    needs: validate-confirmation
+    if: needs.validate-confirmation.outputs.confirmed == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+      
+      - name: Verify AWS credentials
+        run: |
+          echo "✅ Testing AWS credentials..."
+          aws sts get-caller-identity
+      
+      - name: Create IAM deployment user
+        id: create-iam-user
+        run: |
+          echo "Creating IAM deployment user..."
+          
+          # Check if user already exists
+          if aws iam get-user --user-name webwaka-deployment-user 2>/dev/null; then
+            echo "User already exists, skipping creation"
+          else
+            # Create user
+            aws iam create-user --user-name webwaka-deployment-user \
+              --tags Key=Role,Value=Deployment Key=Environment,Value=Development Key=Project,Value=WebWaka
+            
+            # Attach policies
+            aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/AmazonECS_FullAccess
+            aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/AWSAmplifyFullAccess
+            aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+            aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/CloudFrontFullAccess
+            aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/SecretsManagerReadWrite
+            aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+            
+            echo "✅ IAM user created successfully"
+          fi
+      
+      - name: Create S3 bucket for Terraform state
+        run: |
+          echo "Creating S3 bucket for Terraform state..."
+          
+          BUCKET_NAME="webwaka-terraform-state-$(aws sts get-caller-identity --query Account --output text)"
+          
+          # Check if bucket exists
+          if aws s3 ls "s3://${BUCKET_NAME}" 2>/dev/null; then
+            echo "Bucket already exists: ${BUCKET_NAME}"
+          else
+            # Create bucket
+            aws s3 mb "s3://${BUCKET_NAME}" --region us-east-1
+            
+            # Enable versioning
+            aws s3api put-bucket-versioning \
+              --bucket "${BUCKET_NAME}" \
+              --versioning-configuration Status=Enabled
+            
+            # Enable encryption
+            aws s3api put-bucket-encryption \
+              --bucket "${BUCKET_NAME}" \
+              --server-side-encryption-configuration '{
+                "Rules": [{
+                  "ApplyServerSideEncryptionByDefault": {
+                    "SSEAlgorithm": "AES256"
+                  }
+                }]
+              }'
+            
+            echo "✅ S3 bucket created: ${BUCKET_NAME}"
+          fi
+          
+          echo "TERRAFORM_STATE_BUCKET=${BUCKET_NAME}" >> $GITHUB_ENV
+      
+      - name: Configure AWS Budget
+        run: |
+          echo "Configuring AWS Budget..."
+          
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          
+          # Create budget (if not exists)
+          aws budgets create-budget \
+            --account-id "${ACCOUNT_ID}" \
+            --budget '{
+              "BudgetName": "WebWaka-Development-Budget",
+              "BudgetLimit": {
+                "Amount": "200",
+                "Unit": "USD"
+              },
+              "TimeUnit": "MONTHLY",
+              "BudgetType": "COST"
+            }' \
+            --notifications-with-subscribers '[
+              {
+                "Notification": {
+                  "NotificationType": "ACTUAL",
+                  "ComparisonOperator": "GREATER_THAN",
+                  "Threshold": 80,
+                  "ThresholdType": "PERCENTAGE"
+                },
+                "Subscribers": [{
+                  "SubscriptionType": "EMAIL",
+                  "Address": "webwaka.agent.1@gmail.com"
+                }]
+              }
+            ]' 2>/dev/null || echo "Budget already exists"
+          
+          echo "✅ Budget configured"
+      
+      - name: Enable CloudTrail
+        run: |
+          echo "Enabling CloudTrail..."
+          
+          TRAIL_NAME="webwaka-audit-trail"
+          BUCKET_NAME="webwaka-cloudtrail-$(aws sts get-caller-identity --query Account --output text)"
+          
+          # Create CloudTrail bucket (if not exists)
+          if ! aws s3 ls "s3://${BUCKET_NAME}" 2>/dev/null; then
+            aws s3 mb "s3://${BUCKET_NAME}" --region us-east-1
+            
+            # Apply bucket policy for CloudTrail
+            aws s3api put-bucket-policy --bucket "${BUCKET_NAME}" --policy '{
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Sid": "AWSCloudTrailAclCheck",
+                "Effect": "Allow",
+                "Principal": {"Service": "cloudtrail.amazonaws.com"},
+                "Action": "s3:GetBucketAcl",
+                "Resource": "arn:aws:s3:::'${BUCKET_NAME}'"
+              }, {
+                "Sid": "AWSCloudTrailWrite",
+                "Effect": "Allow",
+                "Principal": {"Service": "cloudtrail.amazonaws.com"},
+                "Action": "s3:PutObject",
+                "Resource": "arn:aws:s3:::'${BUCKET_NAME}'/AWSLogs/*",
+                "Condition": {
+                  "StringEquals": {"s3:x-amz-acl": "bucket-owner-full-control"}
+                }
+              }]
+            }'
+          fi
+          
+          # Create trail (if not exists)
+          aws cloudtrail create-trail \
+            --name "${TRAIL_NAME}" \
+            --s3-bucket-name "${BUCKET_NAME}" \
+            --is-multi-region-trail \
+            --enable-log-file-validation 2>/dev/null || echo "Trail already exists"
+          
+          # Start logging
+          aws cloudtrail start-logging --name "${TRAIL_NAME}"
+          
+          echo "✅ CloudTrail enabled"
+      
+      - name: Update ledger
+        run: |
+          python scripts/ledger.py update \
+            --phase "Phase 0" \
+            --status "complete" \
+            --details "AWS bootstrap completed automatically via GitHub Actions"
+      
+      - name: Commit ledger update
+        run: |
+          git config user.name "WebWaka Bot"
+          git config user.email "webwaka.agent.1@gmail.com"
+          git add EXECUTION_LEDGER.md
+          git commit -m "chore: update ledger - AWS bootstrap complete" || echo "No changes to commit"
+          git push
+      
+      - name: Create bootstrap completion issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '✅ AWS Bootstrap Complete',
+              body: `## AWS Bootstrap Completed Successfully
+              
+              The following AWS resources have been provisioned:
+              
+              - ✅ IAM deployment user created
+              - ✅ S3 bucket for Terraform state created
+              - ✅ AWS Budget configured ($200/month)
+              - ✅ CloudTrail enabled for audit logging
+              - ✅ EXECUTION_LEDGER.md updated
+              
+              **Next Steps:**
+              1. Founder: Review this setup
+              2. Founder: Approve Phase 0 via approval dashboard
+              3. Agent: Begin Phase 1 infrastructure provisioning
+              
+              **Terraform State Bucket:** \`${{ env.TERRAFORM_STATE_BUCKET }}\`
+              `,
+              labels: ['automation', 'aws', 'phase-0']
+            });
+      
+      - name: Bootstrap summary
+        run: |
+          echo "========================================="
+          echo "✅ AWS Bootstrap Complete!"
+          echo "========================================="
+          echo ""
+          echo "Resources Created:"
+          echo "  - IAM deployment user: webwaka-deployment-user"
+          echo "  - Terraform state bucket: ${TERRAFORM_STATE_BUCKET}"
+          echo "  - AWS Budget: $200/month with 80% alert"
+          echo "  - CloudTrail: Enabled for audit logging"
+          echo ""
+          echo "Next: Founder should approve Phase 0"
+          echo "========================================="

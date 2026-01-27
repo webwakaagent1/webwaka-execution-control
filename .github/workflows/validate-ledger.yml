@@ -1,0 +1,44 @@
+name: Validate Execution Ledger
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'EXECUTION_LEDGER.md'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'EXECUTION_LEDGER.md'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Validate ledger structure
+        run: |
+          python scripts/ledger.py validate
+      
+      - name: Check phase order
+        run: |
+          python scripts/ledger.py get-current-phase
+      
+      - name: Report validation result
+        if: success()
+        run: |
+          echo "✅ EXECUTION_LEDGER.md validation passed"
+      
+      - name: Report validation failure
+        if: failure()
+        run: |
+          echo "❌ EXECUTION_LEDGER.md validation failed"
+          echo "Please fix the ledger structure before merging"
+          exit 1

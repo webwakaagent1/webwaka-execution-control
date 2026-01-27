@@ -1,0 +1,54 @@
+name: Update Execution Ledger
+
+on:
+  workflow_call:
+    inputs:
+      phase:
+        description: 'Phase name (e.g., Phase 0)'
+        required: true
+        type: string
+      status:
+        description: 'Phase status'
+        required: true
+        type: string
+      details:
+        description: 'Additional details'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Update ledger
+        run: |
+          python scripts/ledger.py update \
+            --phase "${{ inputs.phase }}" \
+            --status "${{ inputs.status }}" \
+            --details "${{ inputs.details }}"
+      
+      - name: Commit changes
+        run: |
+          git config user.name "WebWaka Bot"
+          git config user.email "webwaka.agent.1@gmail.com"
+          git add EXECUTION_LEDGER.md
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update ledger - ${{ inputs.phase }} → ${{ inputs.status }}"
+            git push
+            echo "✅ Ledger updated and committed"
+          fi

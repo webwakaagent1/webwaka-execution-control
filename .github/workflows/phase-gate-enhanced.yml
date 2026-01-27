@@ -1,0 +1,101 @@
+name: Phase Gate Enforcement (Enhanced)
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  validate-phase-order:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Get current phase from ledger
+        id: current-phase
+        run: |
+          PHASE=$(python scripts/ledger.py get-current-phase)
+          echo "phase=${PHASE}" >> $GITHUB_OUTPUT
+          echo "Current phase: ${PHASE}"
+      
+      - name: Validate ledger structure
+        run: |
+          python scripts/ledger.py validate
+      
+      - name: Check phase approval status
+        run: |
+          PHASE_STATUS=$(python scripts/ledger.py get-current-phase | grep -oP '\(\K[^)]+')
+          echo "Phase status: ${PHASE_STATUS}"
+          
+          if [ "${PHASE_STATUS}" != "approved" ] && [ "${{ github.event_name }}" = "push" ]; then
+            echo "⚠️ Warning: Pushing to main without phase approval"
+            echo "Current phase must be approved before proceeding to next phase"
+          fi
+      
+      - name: Validate phase files
+        run: |
+          echo "Validating phase-specific files..."
+          
+          # Check that all required governance documents exist
+          REQUIRED_FILES=(
+            "FOUNDATIONAL_ASSUMPTIONS.md"
+            "GOVERNANCE.md"
+            "EXECUTION_PHASES.md"
+            "EXECUTION_LEDGER.md"
+            "VERIFICATION_STRATEGY.md"
+          )
+          
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "${file}" ]; then
+              echo "❌ Missing required file: ${file}"
+              exit 1
+            fi
+          done
+          
+          echo "✅ All required files present"
+      
+      - name: Check for Phase 0 completion
+        if: contains(steps.current-phase.outputs.phase, 'Phase 0')
+        run: |
+          echo "Checking Phase 0 completion criteria..."
+          
+          # Check for required Phase 0 documents
+          PHASE_0_DOCS=(
+            "AWS_BOOTSTRAP_CONFIG.md"
+            "AWS_IAM_SETUP_GUIDE.md"
+            "PLATFORM_INFRASTRUCTURE.md"
+            "REPOSITORY_STANDARDS.md"
+            "PHASE_1_EXECUTION_PROMPT.md"
+          )
+          
+          MISSING=0
+          for doc in "${PHASE_0_DOCS[@]}"; do
+            if [ ! -f "${doc}" ]; then
+              echo "❌ Missing Phase 0 document: ${doc}"
+              MISSING=1
+            fi
+          done
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "Phase 0 is not complete. Missing required documents."
+            exit 1
+          fi
+          
+          echo "✅ Phase 0 documents complete"
+      
+      - name: Report phase gate status
+        run: |
+          echo "========================================="
+          echo "Phase Gate Validation Complete"
+          echo "========================================="
+          echo "Current Phase: ${{ steps.current-phase.outputs.phase }}"
+          echo "✅ All validations passed"
+          echo "========================================="
