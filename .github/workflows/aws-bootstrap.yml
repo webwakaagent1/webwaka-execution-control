@@ -67,7 +67,6 @@ jobs:
             
             # Attach policies
             aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/AmazonECS_FullAccess
-            aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/AWSAmplifyFullAccess
             aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
             aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/CloudFrontFullAccess
             aws iam attach-user-policy --user-name webwaka-deployment-user --policy-arn arn:aws:iam::aws:policy/SecretsManagerReadWrite
