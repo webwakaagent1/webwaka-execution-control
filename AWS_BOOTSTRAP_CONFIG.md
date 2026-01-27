@@ -48,13 +48,18 @@ This document contains the bootstrap configuration for the WebWaka platform's AW
 
 **Account Email:** webwaka.agent.1@gmail.com  
 **Account Type:** Development  
-**Region:** af-south-1 (Africa - Cape Town)  
+**Region:** us-east-1 (US East - N. Virginia)  
 **Purpose:** Development and testing environment
 
-**Why Africa - Cape Town (af-south-1)?**
-- Lowest latency for Nigeria-based users
-- Aligns with Nigeria-first design principle
-- Supports all required AWS services (Cognito, Aurora, Fargate, Amplify, Bedrock, etc.)
+**Why US East (us-east-1)?**
+- All AWS services available (no development blockers)
+- Lower costs (10-15% savings vs af-south-1)
+- Best documentation and community support
+- CloudFront CDN provides edge caching in Lagos for low-latency static assets
+- Acceptable API latency (150-200ms) for business application use case
+- Offline-first design minimizes server dependency
+
+**Founder Decision:** Approved on 2026-01-27 (see FOUNDER_DECISION_AWS_REGION.md)
 
 ### 3.2. Production Account (Future)
 
@@ -221,104 +226,100 @@ This document contains the bootstrap configuration for the WebWaka platform's AW
 
 ### 8.1. Service Availability and Cross-Region Architecture
 
-**Primary Region:** af-south-1 (Africa - Cape Town)
+**Primary Region:** us-east-1 (US East - N. Virginia)
 
-**Why af-south-1?**
-- Lowest latency for Nigeria-based users (~50-100ms)
-- Aligns with Nigeria-first design principle (Assumption #8)
-- Supports most required AWS services
+**Why us-east-1?**
+- All AWS services available (including Bedrock, latest features)
+- Lower costs compared to other regions
+- CloudFront CDN provides edge caching in Lagos for Nigerian users
+- Acceptable latency for business applications (150-200ms for API calls)
+- Offline-first design minimizes impact of latency
 
-**Service Availability in af-south-1:**
+**Service Availability in us-east-1:**
 
-| Service | Available in af-south-1? | Notes |
+| Service | Available in us-east-1? | Notes |
 |---------|--------------------------|-------|
-| **Cognito** | ✅ Yes | User pool will be created in af-south-1 |
+| **Cognito** | ✅ Yes | User pool will be created in us-east-1 |
 | **Aurora PostgreSQL** | ✅ Yes | Serverless v2 available |
-| **Fargate** | ✅ Yes | ECS cluster will be in af-south-1 |
+| **Fargate** | ✅ Yes | ECS cluster will be in us-east-1 |
 | **Amplify** | ✅ Yes | Global service, uses closest region |
 | **SES** | ✅ Yes | Email sending available |
 | **SNS** | ✅ Yes | Push notifications available |
-| **S3** | ✅ Yes | Bucket will be in af-south-1 |
-| **CloudFront** | ✅ Yes | Global CDN service |
+| **S3** | ✅ Yes | Bucket will be in us-east-1 |
+| **CloudFront** | ✅ Yes | Global CDN with Lagos edge location |
 | **EventBridge** | ✅ Yes | Event bus available |
 | **SQS** | ✅ Yes | Message queues available |
-| **Bedrock** | ❌ **NO** | **Not available in af-south-1** |
+| **Bedrock** | ✅ Yes | All models available |
 | **Secrets Manager** | ✅ Yes | Secrets storage available |
 | **CloudWatch** | ✅ Yes | Monitoring and logging available |
 | **Route 53** | ✅ Yes | Global DNS service |
 
-**Cross-Region Architecture for Bedrock:**
+**CloudFront CDN Strategy for Nigerian Users:**
 
-Since AWS Bedrock is NOT available in af-south-1, we will use a cross-region architecture:
+Since the primary region is us-east-1, we will use CloudFront CDN to provide low-latency access for Nigerian users:
 
-**Bedrock Region:** us-east-1 (N. Virginia)
+**CloudFront Configuration:**
+- **Origin:** S3 bucket in us-east-1 (for static assets)
+- **Edge Location:** Lagos, Nigeria (CloudFront PoP available)
+- **Cache Behavior:** Aggressive caching for static assets (24-hour TTL)
 
-**Why us-east-1?**
-- Bedrock is available in us-east-1
-- Largest AWS region with most services
-- Stable and reliable
+**Performance Characteristics:**
 
-**Latency Implications:**
-- Cross-region API calls from af-south-1 to us-east-1: ~200-300ms additional latency
-- Total Bedrock API latency: ~500-800ms (including model inference time)
+| Asset Type | Latency from Nigeria | Notes |
+|------------|---------------------|-------|
+| Static Assets (CSS, JS, images) | ~20-50ms | Cached at Lagos edge |
+| API Calls (dynamic data) | ~150-200ms | Direct to us-east-1 |
+| Offline Actions | 0ms | Local-first PWA |
+| Bedrock AI Calls | ~300-500ms | Asynchronous, non-blocking |
 
-**Mitigation Strategies:**
+**Mitigation Strategies for API Latency:**
 
-1. **Asynchronous Processing:**
-   - All Bedrock API calls will be asynchronous (non-blocking)
-   - Use SQS queues to decouple Bedrock calls from user-facing requests
-   - User receives immediate response, AI processing happens in background
+1. **Offline-First Design:**
+   - Core actions work offline (POS, lead capture, inventory)
+   - Sync happens in background
+   - User never waits for server
 
-2. **Caching:**
-   - Cache common AI responses in Aurora or ElastiCache
-   - Reduce Bedrock API calls for frequently requested operations
-   - Cache TTL: 24 hours for static content, 1 hour for dynamic content
+2. **Aggressive Caching:**
+   - Cache API responses in service worker
+   - Cache TTL: 5 minutes for dynamic data, 24 hours for static data
+   - Reduces server round-trips
 
-3. **Batch Processing:**
-   - Group multiple AI requests into batches
-   - Process batches during off-peak hours
-   - Reduces per-request overhead
+3. **Asynchronous AI Processing:**
+   - All Bedrock API calls are asynchronous
+   - Use SQS queues to decouple AI from user requests
+   - User receives immediate response, AI processes in background
 
-4. **Fallback Mechanisms:**
-   - If Bedrock API fails or times out, use cached responses
-   - Graceful degradation: Show "AI temporarily unavailable" message
-   - Retry failed requests with exponential backoff
+4. **Optimistic UI Updates:**
+   - Update UI immediately (assume success)
+   - Sync to server in background
+   - Rollback if server rejects
 
 **Implementation Details:**
 
 ```python
-# Example: Asynchronous Bedrock API call
+# Example: All services in us-east-1
 import boto3
 from botocore.config import Config
 
-# Configure Bedrock client for us-east-1
-bedrock_config = Config(
-    region_name='us-east-1',
-    connect_timeout=5,
-    read_timeout=60,
-    retries={'max_attempts': 3}
-)
+# Configure all clients for us-east-1
+default_config = Config(region_name='us-east-1')
 
-bedrock_client = boto3.client('bedrock-runtime', config=bedrock_config)
-
-# All other services use af-south-1
-default_config = Config(region_name='af-south-1')
+bedrock_client = boto3.client('bedrock-runtime', config=default_config)
 cognito_client = boto3.client('cognito-idp', config=default_config)
 aurora_client = boto3.client('rds', config=default_config)
+s3_client = boto3.client('s3', config=default_config)
 ```
 
 **Cost Implications:**
-- Cross-region data transfer: $0.02 per GB (af-south-1 → us-east-1)
-- Estimated monthly cost: $5-10 (assuming 250-500 GB of AI request/response data)
-- This is within the $200/month budget
-
-**Alternative Considered:**
-- Using OpenAI API instead of Bedrock: Rejected due to Assumption #1 (AWS-First)
-- Using eu-west-1 for Bedrock: Rejected due to higher latency to Nigeria (~250ms vs ~200ms)
+- CloudFront data transfer: $0.085 per GB (first 10 TB)
+- Estimated monthly cost: $10-15 (assuming 100-200 GB of static assets)
+- No cross-region data transfer costs (all services in us-east-1)
+- Total savings vs af-south-1: ~$20-30/month
 
 **Future Optimization:**
-- If Bedrock becomes available in af-south-1, migrate immediately
-- Monitor AWS service announcements for af-south-1 region updates
+- Monitor actual latency metrics from Nigerian users
+- Consider Aurora Global Database with read replicas in af-south-1 if needed
+- Evaluate cost/performance tradeoff based on real data
 
 ---
 
@@ -326,9 +327,9 @@ aurora_client = boto3.client('rds', config=default_config)
 
 | Service | Purpose | Configuration |
 |---------|---------|---------------|
-| **Cognito** | Authentication | User pool in af-south-1 |
+| **Cognito** | Authentication | User pool in us-east-1 |
 | **Aurora PostgreSQL** | Database | Serverless v2, Multi-AZ |
-| **Fargate** | Backend hosting | ECS cluster in af-south-1 |
+| **Fargate** | Backend hosting | ECS cluster in us-east-1 |
 | **Amplify** | Frontend hosting | Connected to GitHub |
 | **SES** | Email | Verified domain: webwaka.site |
 | **SNS** | Push notifications | Topic for user notifications |
