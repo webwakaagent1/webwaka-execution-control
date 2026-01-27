@@ -16,14 +16,13 @@ This document defines the critical infrastructure decisions for the WebWaka plat
 
 ### 2.1. Primary Domain
 
-**Domain:** [TO BE PROVIDED BY FOUNDER]
+**Development Domain:** webwaka.site  
+**Production Domain:** webwaka.com (to be configured after Phase 1)
 
-**Recommended Options:**
-- `webwaka.com` (if available)
-- `webwaka.io` (tech-focused)
-- `webwaka.ng` (Nigeria-specific)
+**Domain Registrar:** Namesilo  
+**Registrar Account:** webwaka.agent.1@gmail.com
 
-**Domain Registrar:** [TO BE PROVIDED BY FOUNDER]
+**Current Focus:** Development environment using webwaka.site
 
 **DNS Provider:** AWS Route 53 (recommended for AWS-first architecture)
 
@@ -31,13 +30,15 @@ This document defines the critical infrastructure decisions for the WebWaka plat
 
 **Format:** `{environment}.{service}.{domain}`
 
-**Examples:**
-- `api.webwaka.com` (production API)
+**Development Environment (webwaka.site):**
+- `dev.webwaka.site` (development frontend)
+- `api.dev.webwaka.site` (development API)
+- `*.dev.webwaka.site` (development services)
+
+**Production Environment (webwaka.com - future):**
 - `app.webwaka.com` (production frontend)
-- `staging.api.webwaka.com` (staging API)
-- `staging.app.webwaka.com` (staging frontend)
-- `dev.api.webwaka.com` (development API)
-- `dev.app.webwaka.com` (development frontend)
+- `api.webwaka.com` (production API)
+- `{partner-slug}.webwaka.com` (partner-branded frontends)
 
 **Partner Subdomains:**
 - `{partner-slug}.webwaka.com` (partner-branded frontend)
@@ -273,17 +274,31 @@ This document defines the critical infrastructure decisions for the WebWaka plat
 
 ## 10. Founder Decisions Required
 
-**Before Phase 1 can begin, the Founder must provide:**
+**Founder Decisions Provided (2026-01-27):**
 
-1. **Primary domain name** (e.g., `webwaka.com`)
-2. **Domain registrar** (e.g., Namecheap, GoDaddy, AWS Route 53)
-3. **AWS account ID** (for production)
-4. **AWS region** (recommended: `us-east-1` or `eu-west-1`)
-5. **Environment strategy** (single AWS account vs. multiple accounts)
-6. **Deployment approval process** (who can approve production deployments)
-7. **Budget limits** (monthly AWS spending limit)
+1. ✅ **Primary domain name:**
+   - Development: webwaka.site
+   - Production: webwaka.com (future)
 
-**These decisions will be documented in the Phase 1 Execution Prompt.**
+2. ✅ **Domain registrar:** Namesilo (webwaka.agent.1@gmail.com)
+
+3. ✅ **AWS account:** webwaka.agent.1@gmail.com (development account)
+
+4. ✅ **AWS region:** af-south-1 (Africa - Cape Town)
+   - Chosen for lowest latency to Nigeria
+   - Aligns with Nigeria-first design principle
+
+5. ✅ **Environment strategy:** Single AWS account for development; separate account for production (future)
+
+6. ✅ **Deployment approval process:**
+   - Development: Automatic deployment (no approval required)
+   - Production: Founder approval required with clear guides
+
+7. ✅ **Budget limits:** USD $200/month for development
+
+**All required information has been provided. Phase 1 can begin.**
+
+**Detailed configuration documented in:** `AWS_BOOTSTRAP_CONFIG.md`
 
 ---
 
