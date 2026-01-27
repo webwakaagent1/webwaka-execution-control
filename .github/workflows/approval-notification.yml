@@ -1,0 +1,158 @@
+name: Approval Notification
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'founder-approved')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Extract approval information
+        id: extract
+        run: |
+          # Extract phase from issue title
+          PHASE=$(echo "${{ github.event.issue.title }}" | grep -oP "Phase \d+" || echo "Unknown Phase")
+          echo "phase=$PHASE" >> $GITHUB_OUTPUT
+          
+          # Extract email from issue body
+          EMAIL=$(echo "${{ github.event.issue.body }}" | grep -oP "(?<=Approver: ).*" || echo "")
+          echo "email=$EMAIL" >> $GITHUB_OUTPUT
+          
+          # Get issue number
+          echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+      
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.NOTIFICATION_EMAIL }}
+          password: ${{ secrets.NOTIFICATION_EMAIL_PASSWORD }}
+          subject: "✅ WebWaka ${{ steps.extract.outputs.phase }} Approval Confirmed"
+          to: ${{ steps.extract.outputs.email }}
+          from: WebWaka Automation <${{ secrets.NOTIFICATION_EMAIL }}>
+          body: |
+            Hello,
+            
+            Your approval for ${{ steps.extract.outputs.phase }} has been successfully processed.
+            
+            **Approval Details:**
+            - Phase: ${{ steps.extract.outputs.phase }}
+            - Issue: #${{ steps.extract.outputs.issue_number }}
+            - Approved by: ${{ github.event.issue.user.login }}
+            - Approved at: ${{ github.event.issue.created_at }}
+            
+            **Next Steps:**
+            The automation system will now proceed with the next phase execution.
+            
+            **View Details:**
+            - GitHub Issue: ${{ github.event.issue.html_url }}
+            - Approval Dashboard: https://webwakaagent1.github.io/webwaka-approval-dashboard/
+            - Execution Ledger: https://github.com/webwakaagent1/webwaka-execution-control/blob/main/EXECUTION_LEDGER.md
+            
+            Thank you for your approval!
+            
+            ---
+            WebWaka Automation System
+            https://github.com/webwakaagent1/webwaka-execution-control
+          html_body: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+                .content { background: #f7fafc; padding: 30px; border-radius: 0 0 8px 8px; }
+                .badge { display: inline-block; background: #c6f6d5; color: #22543d; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 20px; }
+                .detail-box { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                .detail-item { margin: 10px 0; }
+                .detail-label { font-weight: 600; color: #4a5568; }
+                .detail-value { color: #1a202c; }
+                .btn { display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+                .footer { text-align: center; color: #718096; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>✅ Approval Confirmed</h1>
+                  <p>WebWaka Project Management</p>
+                </div>
+                <div class="content">
+                  <span class="badge">Approval Processed</span>
+                  
+                  <p>Hello,</p>
+                  <p>Your approval for <strong>${{ steps.extract.outputs.phase }}</strong> has been successfully processed.</p>
+                  
+                  <div class="detail-box">
+                    <h3>Approval Details</h3>
+                    <div class="detail-item">
+                      <span class="detail-label">Phase:</span>
+                      <span class="detail-value">${{ steps.extract.outputs.phase }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Issue:</span>
+                      <span class="detail-value">#${{ steps.extract.outputs.issue_number }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Approved by:</span>
+                      <span class="detail-value">${{ github.event.issue.user.login }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Approved at:</span>
+                      <span class="detail-value">${{ github.event.issue.created_at }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="detail-box">
+                    <h3>Next Steps</h3>
+                    <p>The automation system will now proceed with the next phase execution. You can monitor progress through the dashboard.</p>
+                  </div>
+                  
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${{ github.event.issue.html_url }}" class="btn">View Issue</a>
+                    <a href="https://webwakaagent1.github.io/webwaka-approval-dashboard/" class="btn">Open Dashboard</a>
+                  </div>
+                  
+                  <div class="footer">
+                    <p>WebWaka Automation System</p>
+                    <p><a href="https://github.com/webwakaagent1/webwaka-execution-control" style="color: #667eea;">View on GitHub</a></p>
+                  </div>
+                </div>
+              </div>
+            </body>
+            </html>
+      
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Email notification sent!**\n\nAn approval confirmation email has been sent to the approver.\n\nThe ledger will be updated automatically by the phase-gate workflow.'
+            })
+      
+      - name: Update ledger
+        run: |
+          # Extract phase and issue number
+          PHASE="${{ steps.extract.outputs.phase }}"
+          ISSUE_NUM="${{ steps.extract.outputs.issue_number }}"
+          
+          # Run ledger script to record approval
+          python3 scripts/ledger.py approve --phase "$PHASE" --issue "$ISSUE_NUM"
+          
+          # Commit and push changes
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add EXECUTION_LEDGER.md
+          git commit -m "chore: record $PHASE approval (Issue #$ISSUE_NUM)"
+          git push
