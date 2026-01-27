@@ -284,7 +284,7 @@ This document defines the critical infrastructure decisions for the WebWaka plat
 
 3. ✅ **AWS account:** webwaka.agent.1@gmail.com (development account)
 
-4. ✅ **AWS region:** af-south-1 (Africa - Cape Town)
+4. ✅ **AWS region:** us-east-1 (US East - N. Virginia)
    - Chosen for lowest latency to Nigeria
    - Aligns with Nigeria-first design principle
 

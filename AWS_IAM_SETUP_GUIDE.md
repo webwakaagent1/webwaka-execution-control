@@ -278,7 +278,7 @@ Before starting, ensure you have:
 3. Configure trail:
    - **Trail name:** `webwaka-audit-trail`
    - **Storage location:** Create new S3 bucket
-   - **S3 bucket name:** `webwaka-cloudtrail-logs-[ACCOUNT-ID]`
+   - **S3 bucket name:** `webwaka-audit-trail-logs-[ACCOUNT-ID]`
    - **Log file SSE-KMS encryption:** ✅ Enabled (recommended)
 
 4. Choose log events:
@@ -316,7 +316,7 @@ Before starting, ensure you have:
 
 ## 10. Step 8: Configure AWS Region
 
-**Why:** Ensure all services are created in the correct region (af-south-1 for lowest latency to Nigeria).
+**Why:** Ensure all services are created in the correct region (us-east-1 for lowest latency to Nigeria).
 
 ### Instructions:
 
@@ -324,7 +324,7 @@ Before starting, ensure you have:
 
 2. Click the region dropdown
 
-3. Select **Africa (Cape Town) af-south-1**
+3. Select **Africa (Cape Town) us-east-1**
 
 4. **Verify:** All subsequent service creation will be in this region
 
@@ -332,28 +332,28 @@ Before starting, ensure you have:
 
 ---
 
-## 11. Step 9: Verify Service Availability in af-south-1
+## 11. Step 9: Verify Service Availability in us-east-1
 
 **Why:** Not all AWS services are available in all regions. Verify required services are available.
 
 ### Instructions:
 
 1. Check service availability:
-   - ✅ **Amazon Cognito:** Available in af-south-1
-   - ✅ **Amazon Aurora:** Available in af-south-1
-   - ✅ **AWS Fargate:** Available in af-south-1
+   - ✅ **Amazon Cognito:** Available in us-east-1
+   - ✅ **Amazon Aurora:** Available in us-east-1
+   - ✅ **AWS Fargate:** Available in us-east-1
    - ✅ **AWS Amplify:** Global service (uses closest region)
-   - ✅ **Amazon SES:** Available in af-south-1
-   - ✅ **Amazon SNS:** Available in af-south-1
-   - ✅ **Amazon S3:** Available in af-south-1
+   - ✅ **Amazon SES:** Available in us-east-1
+   - ✅ **Amazon SNS:** Available in us-east-1
+   - ✅ **Amazon S3:** Available in us-east-1
    - ✅ **Amazon CloudFront:** Global service
-   - ✅ **Amazon EventBridge:** Available in af-south-1
-   - ✅ **Amazon SQS:** Available in af-south-1
-   - ⚠️ **Amazon Bedrock:** NOT available in af-south-1
+   - ✅ **Amazon EventBridge:** Available in us-east-1
+   - ✅ **Amazon SQS:** Available in us-east-1
+   - ⚠️ **Amazon Bedrock:** NOT available in us-east-1
      - **Solution:** Use us-east-1 for Bedrock API calls (cross-region access is supported)
      - **Impact:** Slightly higher latency for AI features (~200ms additional)
 
-2. **Decision:** Proceed with af-south-1 for all services except Bedrock
+2. **Decision:** Proceed with us-east-1 for all services except Bedrock
 
 **Verification:** All required services are available or have acceptable workarounds.
 
@@ -389,13 +389,13 @@ Deployment User (CI/CD):
 
 AWS Account Details:
 - Account ID: [12-digit number]
-- Region: af-south-1 (Africa - Cape Town)
+- Region: us-east-1 (US East - N. Virginia)
 - Budget: $200/month
 - Budget alerts: Enabled at 50%, 75%, 90%, 100%
 
 CloudTrail:
 - Enabled: ✅
-- S3 Bucket: webwaka-cloudtrail-logs-[ACCOUNT-ID]
+- S3 Bucket: webwaka-audit-trail-logs-[ACCOUNT-ID]
 ```
 
 2. Store this document in a secure password manager (e.g., 1Password, LastPass, Bitwarden)
@@ -430,7 +430,7 @@ CloudTrail:
 
    **Secret #3:**
    - Name: `AWS_REGION`
-   - Value: `af-south-1`
+   - Value: `us-east-1`
    - Click **Add secret**
 
    **Secret #4:**
@@ -455,7 +455,7 @@ CloudTrail:
 - [ ] Custom deployment policy created and attached
 - [ ] AWS budget configured ($200/month with 4 alert thresholds)
 - [ ] CloudTrail enabled for audit logging
-- [ ] AWS region set to af-south-1
+- [ ] AWS region set to us-east-1
 - [ ] Service availability verified
 - [ ] IAM credentials documented securely
 - [ ] Deployment credentials added to GitHub Secrets

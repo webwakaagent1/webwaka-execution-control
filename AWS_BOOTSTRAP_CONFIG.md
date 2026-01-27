@@ -53,7 +53,7 @@ This document contains the bootstrap configuration for the WebWaka platform's AW
 
 **Why US East (us-east-1)?**
 - All AWS services available (no development blockers)
-- Lower costs (10-15% savings vs af-south-1)
+- Lower costs (10-15% savings vs us-east-1)
 - Best documentation and community support
 - CloudFront CDN provides edge caching in Lagos for low-latency static assets
 - Acceptable API latency (150-200ms) for business application use case
@@ -314,11 +314,11 @@ s3_client = boto3.client('s3', config=default_config)
 - CloudFront data transfer: $0.085 per GB (first 10 TB)
 - Estimated monthly cost: $10-15 (assuming 100-200 GB of static assets)
 - No cross-region data transfer costs (all services in us-east-1)
-- Total savings vs af-south-1: ~$20-30/month
+- Total savings vs us-east-1: ~$20-30/month
 
 **Future Optimization:**
 - Monitor actual latency metrics from Nigerian users
-- Consider Aurora Global Database with read replicas in af-south-1 if needed
+- Consider Aurora Global Database with read replicas in us-east-1 if needed
 - Evaluate cost/performance tradeoff based on real data
 
 ---
@@ -415,7 +415,7 @@ s3_client = boto3.client('s3', config=default_config)
 - [ ] CloudTrail enabled for audit logging
 - [ ] Domain webwaka.site accessible in Namesilo
 - [ ] DNS hosted zone created in Route 53
-- [ ] Region confirmed: af-south-1 (Africa - Cape Town)
+- [ ] Region confirmed: us-east-1 (US East - N. Virginia)
 
 ---
 

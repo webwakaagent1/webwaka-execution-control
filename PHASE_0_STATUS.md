@@ -85,7 +85,7 @@ git push origin phase-0-approved
 
 **Budget:** USD $200/month
 
-**Region:** af-south-1 (Africa - Cape Town)
+**Region:** us-east-1 (US East - N. Virginia)
 
 ---
 

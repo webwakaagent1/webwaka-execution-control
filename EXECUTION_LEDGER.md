@@ -139,7 +139,7 @@ Founder provided all required Phase 1 requirements:
 - Development domain: webwaka.site
 - Production domain: webwaka.com (future)
 - AWS account: webwaka.agent.1@gmail.com
-- AWS region: af-south-1 (Africa - Cape Town)
+- AWS region: us-east-1 (US East - N. Virginia)
 - Budget: USD $200/month
 - Environment strategy: Single account for dev, separate for production
 - Deployment approval: Automatic for dev, Founder approval for production
@@ -225,7 +225,7 @@ Beginning remediation of 11 blocking issues from second independent verification
 - H2: Implement actual phase order verification
 - H3: Define execution ledger structure
 - H4: Document independent verification responsibility
-- H5: Document AWS service availability for af-south-1
+- H5: Document AWS service availability for us-east-1
 - H6: Clarify and enforce Founder approval process (requires Founder action)
 - H7: Fix STOP_SAFE_PROTOCOL directory reference
 - H8: Clarify phase exit criteria vs. approval

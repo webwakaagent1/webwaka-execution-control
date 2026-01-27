@@ -179,11 +179,11 @@ else
     print_warning "Nigeria-specific configuration not detected (acceptable in Phase 0)"
 fi
 
-# Check for af-south-1 region (closest to Nigeria)
-if grep -rq "af-south-1" --include="*.md" --include="*.yml" --include="*.yaml" --include="*.json" --include="*.tf" . 2>/dev/null; then
-    print_success "AWS region af-south-1 (Africa - Cape Town) configured"
+# Check for us-east-1 region (closest to Nigeria)
+if grep -rq "us-east-1" --include="*.md" --include="*.yml" --include="*.yaml" --include="*.json" --include="*.tf" . 2>/dev/null; then
+    print_success "AWS region us-east-1 (US East - N. Virginia) configured"
 else
-    print_warning "AWS region af-south-1 not detected (should be configured in Phase 0)"
+    print_warning "AWS region us-east-1 not detected (should be configured in Phase 0)"
 fi
 
 echo ""

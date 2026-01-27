@@ -65,7 +65,7 @@ This document lists the **minimum required fixes** that must be completed before
 2. **Founder Action:** Add the following secrets to GitHub Actions:
    - `AWS_ACCESS_KEY_ID`
    - `AWS_SECRET_ACCESS_KEY`
-   - `AWS_REGION` (set to `af-south-1`)
+   - `AWS_REGION` (set to `us-east-1`)
    - `AWS_ACCOUNT_ID`
 3. Update `PHASE_1_EXECUTION_PROMPT.md`:
    - Replace all `[TO BE PROVIDED]` placeholders with references to GitHub Secrets.
@@ -149,17 +149,17 @@ This document lists the **minimum required fixes** that must be completed before
 
 ---
 
-### H5: Document AWS Service Availability for `af-south-1`
+### H5: Document AWS Service Availability for `us-east-1`
 
-**Problem:** AWS Bedrock (a core AI service) is not available in the chosen region (`af-south-1`).
+**Problem:** AWS Bedrock (a core AI service) is not available in the chosen region (`us-east-1`).
 
 **Required Fix:**
 1. Update `AWS_BOOTSTRAP_CONFIG.md` to add a section titled "Service Availability and Cross-Region Architecture":
-   - List all AWS services that are NOT available in `af-south-1` (e.g., Bedrock).
+   - List all AWS services that are NOT available in `us-east-1` (e.g., Bedrock).
    - Document that Bedrock will be accessed from `us-east-1` (or another region).
    - Document the latency implications and mitigation strategies (e.g., caching, async processing).
 2. Update `PHASE_1_EXECUTION_PROMPT.md` to specify:
-   - "AWS Bedrock will be accessed from the `us-east-1` region due to unavailability in `af-south-1`."
+   - "AWS Bedrock will be accessed from the `us-east-1` region due to unavailability in `us-east-1`."
    - "API calls to Bedrock will be asynchronous to mitigate cross-region latency."
 
 **Verification:** A Phase 1 Manus should know which region to use for Bedrock without asking.

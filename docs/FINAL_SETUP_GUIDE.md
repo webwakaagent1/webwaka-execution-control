@@ -12,7 +12,7 @@
    - Shows Phase 0 status with all exit criteria
 
 2. **AWS Region Changed** ✓
-   - Changed from: `af-south-1` (South Africa)
+   - Changed from: `us-east-1` (South Africa)
    - Changed to: `us-east-1` (US East - N. Virginia)
    - Reason: Better service availability, lower costs, full feature support
    - Decision documented in: `FOUNDER_DECISION_AWS_REGION.md`

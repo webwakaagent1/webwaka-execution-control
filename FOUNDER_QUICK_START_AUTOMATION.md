@@ -117,7 +117,7 @@ Once you approve Phase 0:
 
 ## Key Changes from Original Plan
 
-### AWS Region Changed: af-south-1 → us-east-1
+### AWS Region Changed: us-east-1 → us-east-1
 
 **Why?**
 - All AWS services available (no blockers)

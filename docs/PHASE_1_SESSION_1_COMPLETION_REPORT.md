@@ -77,12 +77,12 @@ This section provides a chronological account of the actions taken during this s
 
 ### 3.1. AWS Resources
 
-The following foundational resources are now active in the `af-south-1` region:
+The following foundational resources are now active in the `us-east-1` region:
 
 *   **IAM User:** `webwaka-deployment`
-*   **S3 Bucket:** `webwaka-terraform-state-af-south-1`
+*   **S3 Bucket:** `webwaka-terraform-state-963324162460`
 *   **AWS Budget:** `WebWaka-Development-Budget` ($200/month limit)
-*   **CloudTrail:** `webwaka-cloudtrail` logging to a dedicated S3 bucket.
+*   **CloudTrail:** `webwaka-audit-trail` logging to a dedicated S3 bucket.
 
 ### 3.2. GitHub Repository
 

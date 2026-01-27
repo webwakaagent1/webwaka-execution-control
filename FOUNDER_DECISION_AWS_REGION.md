@@ -9,7 +9,7 @@
 
 ## Decision Summary
 
-**Original Region:** `af-south-1` (Africa - Cape Town)  
+**Original Region:** `us-east-1` (US East - N. Virginia)  
 **New Region:** `us-east-1` (US East - N. Virginia)  
 **Status:** Approved by Founder
 
@@ -17,7 +17,7 @@
 
 ## Rationale
 
-### Original Selection (af-south-1)
+### Original Selection (us-east-1)
 - Lower latency for Nigeria-based users (~50ms)
 - Aligns with Nigeria-first design principle
 - Regional presence in Africa
@@ -34,7 +34,7 @@
 
 ## Performance Impact Analysis
 
-| Metric | af-south-1 | us-east-1 with CDN | Impact |
+| Metric | us-east-1 | us-east-1 with CDN | Impact |
 |--------|------------|-------------------|--------|
 | Static Assets | ~50ms | ~50ms | ✅ No change (CDN) |
 | API Calls | ~50ms | ~150-200ms | ⚠️ Acceptable |
@@ -47,7 +47,7 @@
 
 ## Cost Impact Analysis
 
-| Service | af-south-1 | us-east-1 | Monthly Savings |
+| Service | us-east-1 | us-east-1 | Monthly Savings |
 |---------|------------|-----------|-----------------|
 | Fargate | Higher | Lower | ~$8-12 |
 | Data Transfer | Higher | Lower | ~$10-15 |
@@ -61,7 +61,7 @@
 ## Implementation Plan
 
 1. ✅ Update `FOUNDATIONAL_ASSUMPTIONS.md` (no region specified, so no change needed)
-2. ✅ Update `AWS_BOOTSTRAP_CONFIG.md` (change region from af-south-1 to us-east-1)
+2. ✅ Update `AWS_BOOTSTRAP_CONFIG.md` (change region from us-east-1 to us-east-1)
 3. ✅ Update `PLATFORM_INFRASTRUCTURE.md` (document CDN strategy)
 4. ✅ Update all Terraform configurations (when created)
 5. ✅ Document CloudFront edge caching strategy
@@ -82,7 +82,7 @@
 ## Future Considerations
 
 ### Production Phase
-- Consider Aurora Global Database with read replicas in `af-south-1` for lower latency reads
+- Consider Aurora Global Database with read replicas in `us-east-1` for lower latency reads
 - Monitor actual latency metrics from Nigerian users
 - Evaluate cost/performance tradeoff based on real data
 - Can add regional infrastructure if needed (architecture supports it)

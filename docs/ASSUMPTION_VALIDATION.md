@@ -82,14 +82,14 @@ The following assumptions can be automatically validated by the validation scrip
 
 **Checks:**
 - ✅ Verifies Nigeria-specific configuration (Naira currency, NGN, etc.)
-- ✅ Verifies AWS region is `af-south-1` (Africa - Cape Town, closest to Nigeria)
+- ✅ Verifies AWS region is `us-east-1` (US East - N. Virginia, closest to Nigeria)
 
 **Pass Criteria:**
-- AWS region is `af-south-1`
+- AWS region is `us-east-1`
 - Nigeria-specific configuration present (in Phase 1+)
 
 **Failure Action:**
-- Warning if af-south-1 not configured
+- Warning if us-east-1 not configured
 - Block merge if wrong region is used
 
 ---

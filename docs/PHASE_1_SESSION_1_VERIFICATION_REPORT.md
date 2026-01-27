@@ -35,8 +35,8 @@ I verified that the following AWS resources were successfully created:
 - Permissions: Comprehensive deployment permissions attached
 - Status: Active and functional
 
-✅ **S3 Terraform State Bucket:** `webwaka-terraform-state-af-south-1`
-- Region: af-south-1 (Africa - Cape Town)
+✅ **S3 Terraform State Bucket:** `webwaka-terraform-state-963324162460`
+- Region: us-east-1 (US East - N. Virginia)
 - Versioning: Enabled
 - Encryption: AES256 server-side encryption
 - Purpose: Store Terraform state files
@@ -48,8 +48,8 @@ I verified that the following AWS resources were successfully created:
 - Purpose: Cost monitoring and overspend prevention
 - Status: Active and monitoring
 
-✅ **CloudTrail Audit Logging:** `webwaka-cloudtrail`
-- S3 Bucket: `webwaka-cloudtrail-logs-af-south-1`
+✅ **CloudTrail Audit Logging:** `webwaka-audit-trail`
+- S3 Bucket: `webwaka-audit-trail-963324162460`
 - Log File Validation: Enabled
 - Purpose: Security audit trail and compliance
 - Status: Active and logging

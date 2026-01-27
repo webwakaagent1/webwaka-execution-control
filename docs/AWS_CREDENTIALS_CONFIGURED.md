@@ -43,7 +43,7 @@ All AWS credentials have been successfully configured in GitHub Secrets for the 
 - **Value:** us-east-1
 - **Purpose:** Default AWS region for infrastructure deployment
 - **Timestamp:** Added just now
-- **Note:** Changed from af-south-1 to us-east-1 as per Founder's approval
+- **Note:** Changed from us-east-1 to us-east-1 as per Founder's approval
 
 ---
 

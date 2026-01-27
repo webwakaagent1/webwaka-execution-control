@@ -22,8 +22,8 @@ The AWS Bootstrap workflow has been successfully executed. All required AWS infr
 - **Purpose:** Automated deployments via GitHub Actions
 
 ### ✅ 2. S3 Bucket for Terraform State
-- **Bucket:** `webwaka-terraform-state-af-south-1`
-- **Region:** af-south-1 (Africa - Cape Town)
+- **Bucket:** `webwaka-terraform-state-963324162460`
+- **Region:** us-east-1 (US East - N. Virginia)
 - **Versioning:** Enabled
 - **Encryption:** AES256 server-side encryption
 - **Purpose:** Store Terraform state files for infrastructure-as-code
@@ -35,8 +35,8 @@ The AWS Bootstrap workflow has been successfully executed. All required AWS infr
 - **Purpose:** Cost monitoring and overspend prevention
 
 ### ✅ 4. CloudTrail Audit Logging
-- **Trail Name:** webwaka-cloudtrail
-- **S3 Bucket:** `webwaka-cloudtrail-logs-af-south-1`
+- **Trail Name:** webwaka-audit-trail
+- **S3 Bucket:** `webwaka-cloudtrail-963324162460`
 - **Log File Validation:** Enabled
 - **Purpose:** Security audit trail and compliance
 
@@ -63,13 +63,13 @@ All resources were verified via AWS CLI during workflow execution:
 aws iam get-user --user-name webwaka-deployment
 
 # S3 bucket verified
-aws s3 ls s3://webwaka-terraform-state-af-south-1/
+aws s3 ls s3://webwaka-terraform-state-963324162460/
 
 # Budget verified
 aws budgets describe-budgets --account-id <ACCOUNT_ID>
 
 # CloudTrail verified
-aws cloudtrail describe-trails --trail-name-list webwaka-cloudtrail
+aws cloudtrail describe-trails --trail-name-list webwaka-audit-trail
 ```
 
 ---

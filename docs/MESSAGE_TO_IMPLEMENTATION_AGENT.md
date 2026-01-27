@@ -38,8 +38,8 @@ Your next tasks:
 - **Repository:** https://github.com/webwakaagent1/webwaka-execution-control
 - **GitHub PAT Secret:** `GH_PAT` (available in GitHub Secrets)
 - **AWS Credentials:** Already configured in GitHub Secrets
-- **Terraform State Bucket:** `webwaka-terraform-state-af-south-1`
-- **Region:** af-south-1 (Africa - Cape Town)
+- **Terraform State Bucket:** `webwaka-terraform-state-963324162460`
+- **Region:** us-east-1 (US East - N. Virginia)
 
 ## 📝 Documentation Requirements
 

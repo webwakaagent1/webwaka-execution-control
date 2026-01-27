@@ -78,11 +78,11 @@
 
 | Document | AWS Region | Status |
 |----------|-----------|--------|
-| AWS_BOOTSTRAP_CONFIG.md | af-south-1 | ✅ |
-| PLATFORM_INFRASTRUCTURE.md | af-south-1 | ✅ |
-| PHASE_0_FINAL_COMPLETION_REPORT.md | af-south-1 | ✅ |
+| AWS_BOOTSTRAP_CONFIG.md | us-east-1 | ✅ |
+| PLATFORM_INFRASTRUCTURE.md | us-east-1 | ✅ |
+| PHASE_0_FINAL_COMPLETION_REPORT.md | us-east-1 | ✅ |
 
-**Result:** ✅ CONSISTENT - All documents specify af-south-1
+**Result:** ✅ CONSISTENT - All documents specify us-east-1
 
 ---
 

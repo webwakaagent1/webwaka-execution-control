@@ -30,7 +30,7 @@ All 11 blocking issues (3 CRITICAL + 8 HIGH) from the second Independent Verific
   - Assumption #1 (AWS-First): Scans for non-AWS services
   - Assumption #4 (PWA-First): Checks for manifest.json and service worker
   - Assumption #5 (Offline-First): Checks for IndexedDB usage
-  - Assumption #8 (Nigeria-First): Verifies af-south-1 region
+  - Assumption #8 (Nigeria-First): Verifies us-east-1 region
   - Assumption #15 (Absolute State Persistence): Checks git status
 - Created `docs/ASSUMPTION_VALIDATION.md` documenting all validation procedures (manual + automated)
 - Integrated validation script into phase-gate workflow
@@ -82,8 +82,8 @@ All 11 blocking issues (3 CRITICAL + 8 HIGH) from the second Independent Verific
 
 **✅ H5: AWS Service Availability Documentation**
 - Added Section 8.1 to `AWS_BOOTSTRAP_CONFIG.md`: "Service Availability and Cross-Region Architecture"
-- Created table showing which services are available in af-south-1
-- Documented that Bedrock is NOT available in af-south-1
+- Created table showing which services are available in us-east-1
+- Documented that Bedrock is NOT available in us-east-1
 - Documented cross-region architecture (Bedrock in us-east-1)
 - Documented latency implications (~200-300ms additional)
 - Documented 4 mitigation strategies (async processing, caching, batching, fallbacks)
@@ -205,7 +205,7 @@ All 11 blocking issues (3 CRITICAL + 8 HIGH) from the second Independent Verific
 2. Add the following secrets to GitHub Actions:
    - `AWS_ACCESS_KEY_ID` (from deployment user)
    - `AWS_SECRET_ACCESS_KEY` (from deployment user)
-   - `AWS_REGION` (value: `af-south-1`)
+   - `AWS_REGION` (value: `us-east-1`)
    - `AWS_ACCOUNT_ID` (your 12-digit AWS account ID)
 3. Update `EXECUTION_LEDGER.md` with entry:
    - "2026-01-27: Founder completed AWS IAM setup. Credentials added to GitHub Secrets."

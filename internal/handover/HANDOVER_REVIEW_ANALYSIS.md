@@ -146,7 +146,7 @@ This is the **correct status** — work is complete but requires Founder approva
 
 **Strengths**:
 - Specific and actionable (not generic)
-- Based on actual project constraints (e.g., af-south-1 region, $200 budget)
+- Based on actual project constraints (e.g., us-east-1 region, $200 budget)
 - Includes common mistakes (e.g., "Don't duplicate Notion content")
 
 **Most Critical Warnings**:
@@ -282,7 +282,7 @@ This is a **hard blocker** — the agent correctly identifies that Phase 1 infra
 
 ### 5. Budget and Region Constraints are Clear
 - **Budget**: $200/month (with alerts configured)
-- **Region**: af-south-1 (Africa - Cape Town)
+- **Region**: us-east-1 (US East - N. Virginia)
 - **Exception**: Bedrock uses us-east-1 with cross-region calls
 
 **Cost estimate for Phase 1**: $50-75/month (well under budget)

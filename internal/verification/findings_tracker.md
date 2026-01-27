@@ -157,15 +157,15 @@ fi
 
 ---
 
-### H5: AWS Region Choice (af-south-1) Has Service Availability Risks
+### H5: AWS Region Choice (us-east-1) Has Service Availability Risks
 **Severity:** HIGH  
 **Location:** AWS_BOOTSTRAP_CONFIG.md, PLATFORM_INFRASTRUCTURE.md  
-**Description:** The chosen AWS region (af-south-1, Cape Town) is documented, but there's no analysis of service availability. AWS Bedrock (AI primitive, Foundational Assumption #7) is NOT available in af-south-1, requiring cross-region calls.
+**Description:** The chosen AWS region (us-east-1, Cape Town) is documented, but there's no analysis of service availability. AWS Bedrock (AI primitive, Foundational Assumption #7) is NOT available in us-east-1, requiring cross-region calls.
 
 **Evidence:**
-- AWS_BOOTSTRAP_CONFIG.md specifies af-south-1
+- AWS_BOOTSTRAP_CONFIG.md specifies us-east-1
 - Foundational Assumption #1: "AI: AWS Bedrock (primary)"
-- AWS Bedrock not available in af-south-1 (as of 2026-01)
+- AWS Bedrock not available in us-east-1 (as of 2026-01)
 
 **Risk if Unaddressed:** Phase 1 AI integration will require cross-region architecture, increasing latency and complexity. This contradicts the "Nigeria-first, low-latency" design principle.
 

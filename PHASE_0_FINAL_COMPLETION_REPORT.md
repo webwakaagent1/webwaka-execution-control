@@ -33,7 +33,7 @@ Phase 0 is **complete and approved**. All blocking issues from the Independent V
 - ✅ Production domain: webwaka.com (future)
 - ✅ Domain registrar: Namesilo
 - ✅ AWS account: webwaka.agent.1@gmail.com
-- ✅ AWS region: af-south-1 (Africa - Cape Town)
+- ✅ AWS region: us-east-1 (US East - N. Virginia)
 - ✅ Budget limit: USD $200/month
 - ✅ Environment strategy: Single account for dev, separate for production
 - ✅ Deployment approval: Automatic for dev, Founder approval for production
@@ -276,7 +276,7 @@ Phase 0 is **complete and approved**. All blocking issues from the Independent V
 
 | Risk | Probability | Impact | Mitigation Plan |
 |------|-------------|--------|-----------------|
-| AWS region limitations (Bedrock not in af-south-1) | High | Low | Use us-east-1 for Bedrock (cross-region) |
+| AWS region limitations (Bedrock not in us-east-1) | High | Low | Use us-east-1 for Bedrock (cross-region) |
 | Budget exceeded during Phase 1 | Medium | Medium | Monitor costs weekly, optimize resources |
 | IAM setup errors | Low | Medium | Follow step-by-step guide, test credentials |
 | Domain DNS propagation delays | Low | Low | Allow 24-48 hours for DNS changes |

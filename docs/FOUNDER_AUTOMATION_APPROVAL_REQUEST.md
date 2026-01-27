@@ -46,7 +46,7 @@ I will automate **everything** so you only need to:
 
 ### Decision #1: Change AWS Region (RECOMMENDED)
 
-**Current Plan:** `af-south-1` (Cape Town, South Africa)
+**Current Plan:** `us-east-1` (Cape Town, South Africa)
 - ✅ Lower latency for Nigeria (~50ms)
 - ❌ Missing some AWS services (could block development)
 - ❌ Higher costs for some services
@@ -64,7 +64,7 @@ I will automate **everything** so you only need to:
 
 **Your Decision:** 
 - [ ] Approve: Change to `us-east-1` (recommended)
-- [ ] Reject: Keep `af-south-1` (I'll work around service limitations)
+- [ ] Reject: Keep `us-east-1` (I'll work around service limitations)
 
 ---
 
@@ -205,7 +205,7 @@ You mentioned:
 Please indicate your decision on the 3 key items:
 
 ### Decision Summary
-1. **AWS Region Change** (`af-south-1` → `us-east-1`):  
+1. **AWS Region Change** (`us-east-1` → `us-east-1`):  
    [ ] Approve  [ ] Reject
 
 2. **Terraform for Infrastructure**:  

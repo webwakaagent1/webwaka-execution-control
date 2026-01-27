@@ -22,7 +22,7 @@ While the handover document is excellent, there are a few areas that require imm
 
 *   **Critical Security Vulnerability**: The document contains sensitive credentials, including a GitHub Personal Access Token (PAT) and passwords for AWS and Google accounts, in plain text. This is a critical security vulnerability that must be addressed immediately. All exposed credentials should be rotated, and a secure method for managing secrets should be implemented.
 *   **Founder Dependency and Bottleneck**: The project's progress is heavily dependent on the Founder for several critical actions: configuring branch protection, completing the AWS IAM setup, and approving the completion of Phase 0. Any delays from the Founder will directly impact the project timeline and create a significant bottleneck.
-*   **AWS Region Service Limitations**: The choice of the `af-south-1` (Cape Town) AWS region may present challenges due to limited availability of certain AWS services. The document acknowledges this for AWS Bedrock, but the new agent should be prepared for other potential service limitations and plan for cross-region architectures if necessary.
+*   **AWS Region Service Limitations**: The choice of the `us-east-1` (Cape Town) AWS region may present challenges due to limited availability of certain AWS services. The document acknowledges this for AWS Bedrock, but the new agent should be prepared for other potential service limitations and plan for cross-region architectures if necessary.
 *   **Manual Processes**: Several key processes, such as updating the `EXECUTION_LEDGER.md` file, are manual. These manual steps are prone to human error and could lead to inconsistencies in the project's state tracking.
 
 ## 4. Key Project Information Summary
@@ -37,7 +37,7 @@ The following table summarizes the most critical information for the new agent:
 | **Next Phase**            | Phase 1: Core Infrastructure                                                                                                         |
 | **Key Repository**        | `webwaka-execution-control`                                                                                                          |
 | **Cloud Provider**        | AWS                                                                                                                                  |
-| **AWS Region**            | `af-south-1` (Cape Town)                                                                                                             |
+| **AWS Region**            | `us-east-1` (Cape Town)                                                                                                             |
 | **Monthly Budget**        | $200                                                                                                                                 |
 | **Governance Model**      | Blueprint v5.0, Phase-Gate process, Independent Verification                                                                         |
 | **Critical Rule**         | Absolute State Persistence Rule (all work must be committed to GitHub)                                                               |

@@ -58,8 +58,8 @@ This document is the **execution prompt** for Phase 1. It will be issued by the 
 **Provided by Founder (2026-01-27):**
 
 - **AWS Account:** webwaka.agent.1@gmail.com
-- **AWS Region (Primary):** af-south-1 (Africa - Cape Town)
-- **AWS Region (Bedrock):** us-east-1 (N. Virginia) — Bedrock is NOT available in af-south-1
+- **AWS Region (Primary):** us-east-1 (US East - N. Virginia)
+- **AWS Region (Bedrock):** us-east-1 (N. Virginia) — Bedrock is NOT available in us-east-1
 - **AWS Access Key ID:** Stored in GitHub Secret `AWS_ACCESS_KEY_ID`
 - **AWS Secret Access Key:** Stored in GitHub Secret `AWS_SECRET_ACCESS_KEY`
 - **AWS Account ID:** Stored in GitHub Secret `AWS_ACCOUNT_ID`
@@ -86,10 +86,10 @@ The Founder has completed (or will complete) the AWS IAM setup per `AWS_IAM_SETU
 
 **Cross-Region Architecture:**
 
-**IMPORTANT:** AWS Bedrock is NOT available in af-south-1. You MUST use us-east-1 for Bedrock API calls.
+**IMPORTANT:** AWS Bedrock is NOT available in us-east-1. You MUST use us-east-1 for Bedrock API calls.
 
 **Implementation:**
-- All services (Cognito, Aurora, Fargate, etc.) use af-south-1
+- All services (Cognito, Aurora, Fargate, etc.) use us-east-1
 - Bedrock API calls use us-east-1
 - Bedrock calls MUST be asynchronous to mitigate cross-region latency (~200-300ms)
 - Use SQS queues to decouple Bedrock calls from user-facing requests
@@ -104,8 +104,8 @@ from botocore.config import Config
 bedrock_config = Config(region_name='us-east-1')
 bedrock_client = boto3.client('bedrock-runtime', config=bedrock_config)
 
-# All other services (af-south-1)
-default_config = Config(region_name='af-south-1')
+# All other services (us-east-1)
+default_config = Config(region_name='us-east-1')
 cognito_client = boto3.client('cognito-idp', config=default_config)
 ```
 

@@ -27,7 +27,7 @@ I have successfully implemented a comprehensive automation system for the WebWak
 ### 2. AWS Configuration Updates
 
 **Changes Made**:
-- Region changed from `af-south-1` (South Africa) to `us-east-1` (US East)
+- Region changed from `us-east-1` (South Africa) to `us-east-1` (US East)
 - Updated in: `AWS_BOOTSTRAP_CONFIG.md`
 - Documented decision in: `FOUNDER_DECISION_AWS_REGION.md`
 

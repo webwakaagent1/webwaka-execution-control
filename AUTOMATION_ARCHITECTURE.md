@@ -11,7 +11,7 @@
 
 This document outlines a comprehensive automation strategy to minimize manual work for the non-technical Founder. The automation covers:
 
-1. **AWS Region Optimization** - Switch from `af-south-1` to `us-east-1` for full service availability
+1. **AWS Region Optimization** - Switch from `us-east-1` to `us-east-1` for full service availability
 2. **AWS Infrastructure Automation** - Automated provisioning using Terraform with GitHub Actions
 3. **EXECUTION_LEDGER Automation** - Automated phase tracking and status updates
 4. **Founder Approval Automation** - Simple web-based approval dashboard (no GitHub knowledge required)
@@ -24,11 +24,11 @@ This document outlines a comprehensive automation strategy to minimize manual wo
 
 ---
 
-## 2. AWS Region Change: af-south-1 → us-east-1
+## 2. AWS Region Change: us-east-1 → us-east-1
 
 ### 2.1. Rationale for Change
 
-**Current Region:** `af-south-1` (Cape Town)
+**Current Region:** `us-east-1` (Cape Town)
 - ✅ Lower latency for Nigeria
 - ❌ Limited service availability (missing services can block development)
 - ❌ Higher costs for some services
@@ -52,7 +52,7 @@ This document outlines a comprehensive automation strategy to minimize manual wo
 Even with `us-east-1`, we can maintain good performance for Nigerian users:
 
 1. **CloudFront CDN** - Cache static assets at edge locations (Lagos has a CloudFront PoP)
-2. **Aurora Global Database** - Read replicas in `af-south-1` for low-latency reads
+2. **Aurora Global Database** - Read replicas in `us-east-1` for low-latency reads
 3. **S3 Transfer Acceleration** - Faster uploads from Nigeria
 4. **API Gateway Edge-Optimized** - Route requests through nearest edge location
 5. **Progressive Web App** - Offline-first design reduces server round-trips
@@ -64,7 +64,7 @@ Even with `us-east-1`, we can maintain good performance for Nigerian users:
 
 ### 2.3. Cost Comparison
 
-| Service | af-south-1 | us-east-1 | Savings |
+| Service | us-east-1 | us-east-1 | Savings |
 |---------|------------|-----------|---------|
 | Aurora Serverless v2 | $0.12/ACU-hour | $0.12/ACU-hour | $0 |
 | Fargate (1 vCPU, 2GB) | $0.04856/hour | $0.04048/hour | 17% |
@@ -82,7 +82,7 @@ Even with `us-east-1`, we can maintain good performance for Nigerian users:
 - Full service availability prevents development blockers
 - Cost savings increase runway
 - Latency is acceptable with CDN
-- Can add `af-south-1` read replicas in production if needed
+- Can add `us-east-1` read replicas in production if needed
 
 ---
 
@@ -467,7 +467,7 @@ The current approval process requires Founder to:
 ## 9. Founder Approval Required
 
 **This automation plan requires Founder approval for:**
-1. ✅ Region change: `af-south-1` → `us-east-1`
+1. ✅ Region change: `us-east-1` → `us-east-1`
 2. ✅ Use of Terraform for infrastructure
 3. ✅ Creation of approval dashboard
 4. ✅ Automated credential rotation

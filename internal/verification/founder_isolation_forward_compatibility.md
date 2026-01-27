@@ -28,7 +28,7 @@ Can that agent safely proceed to Phase 1 without asking clarifying questions?
 | Requirement | Available in GitHub? | Location | Complete? |
 |-------------|---------------------|----------|-----------|
 | AWS Account ID | ❌ NO | PHASE_1_EXECUTION_PROMPT.md says "[TO BE PROVIDED]" | ❌ MISSING |
-| AWS Region | ✅ YES | AWS_BOOTSTRAP_CONFIG.md, PLATFORM_INFRASTRUCTURE.md | ✅ af-south-1 |
+| AWS Region | ✅ YES | AWS_BOOTSTRAP_CONFIG.md, PLATFORM_INFRASTRUCTURE.md | ✅ us-east-1 |
 | AWS Access Key ID | ❌ NO | Should be in GitHub Secrets, not documented | ❌ MISSING |
 | AWS Secret Access Key | ❌ NO | Should be in GitHub Secrets, not documented | ❌ MISSING |
 | Domain name (dev) | ✅ YES | PLATFORM_INFRASTRUCTURE.md | ✅ webwaka.site |
@@ -159,11 +159,11 @@ Can that agent safely proceed to Phase 1 without asking clarifying questions?
 | S3 + CloudFront | ✅ YES | ⚠️ Basic | ✅ Unlimited scale |
 | EventBridge | ✅ YES | ⚠️ Basic | ✅ Scales to billions of events |
 | SQS | ✅ YES | ⚠️ Basic | ✅ Scales to billions of messages |
-| Bedrock | ✅ YES | ❌ NO | ⚠️ Cross-region required (af-south-1) |
+| Bedrock | ✅ YES | ❌ NO | ⚠️ Cross-region required (us-east-1) |
 
 **Result:** ✅ **STRONG** - All services scale to platform requirements
 
-**Concern:** Bedrock not available in af-south-1, requires cross-region architecture. This is documented in findings but not in Phase 1 prompt.
+**Concern:** Bedrock not available in us-east-1, requires cross-region architecture. This is documented in findings but not in Phase 1 prompt.
 
 ---
 
