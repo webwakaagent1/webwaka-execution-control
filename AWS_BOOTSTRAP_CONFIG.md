@@ -219,7 +219,110 @@ This document contains the bootstrap configuration for the WebWaka platform's AW
 
 ## 8. Service Configuration
 
-### 8.1. AWS Services to Provision (Phase 1)
+### 8.1. Service Availability and Cross-Region Architecture
+
+**Primary Region:** af-south-1 (Africa - Cape Town)
+
+**Why af-south-1?**
+- Lowest latency for Nigeria-based users (~50-100ms)
+- Aligns with Nigeria-first design principle (Assumption #8)
+- Supports most required AWS services
+
+**Service Availability in af-south-1:**
+
+| Service | Available in af-south-1? | Notes |
+|---------|--------------------------|-------|
+| **Cognito** | ✅ Yes | User pool will be created in af-south-1 |
+| **Aurora PostgreSQL** | ✅ Yes | Serverless v2 available |
+| **Fargate** | ✅ Yes | ECS cluster will be in af-south-1 |
+| **Amplify** | ✅ Yes | Global service, uses closest region |
+| **SES** | ✅ Yes | Email sending available |
+| **SNS** | ✅ Yes | Push notifications available |
+| **S3** | ✅ Yes | Bucket will be in af-south-1 |
+| **CloudFront** | ✅ Yes | Global CDN service |
+| **EventBridge** | ✅ Yes | Event bus available |
+| **SQS** | ✅ Yes | Message queues available |
+| **Bedrock** | ❌ **NO** | **Not available in af-south-1** |
+| **Secrets Manager** | ✅ Yes | Secrets storage available |
+| **CloudWatch** | ✅ Yes | Monitoring and logging available |
+| **Route 53** | ✅ Yes | Global DNS service |
+
+**Cross-Region Architecture for Bedrock:**
+
+Since AWS Bedrock is NOT available in af-south-1, we will use a cross-region architecture:
+
+**Bedrock Region:** us-east-1 (N. Virginia)
+
+**Why us-east-1?**
+- Bedrock is available in us-east-1
+- Largest AWS region with most services
+- Stable and reliable
+
+**Latency Implications:**
+- Cross-region API calls from af-south-1 to us-east-1: ~200-300ms additional latency
+- Total Bedrock API latency: ~500-800ms (including model inference time)
+
+**Mitigation Strategies:**
+
+1. **Asynchronous Processing:**
+   - All Bedrock API calls will be asynchronous (non-blocking)
+   - Use SQS queues to decouple Bedrock calls from user-facing requests
+   - User receives immediate response, AI processing happens in background
+
+2. **Caching:**
+   - Cache common AI responses in Aurora or ElastiCache
+   - Reduce Bedrock API calls for frequently requested operations
+   - Cache TTL: 24 hours for static content, 1 hour for dynamic content
+
+3. **Batch Processing:**
+   - Group multiple AI requests into batches
+   - Process batches during off-peak hours
+   - Reduces per-request overhead
+
+4. **Fallback Mechanisms:**
+   - If Bedrock API fails or times out, use cached responses
+   - Graceful degradation: Show "AI temporarily unavailable" message
+   - Retry failed requests with exponential backoff
+
+**Implementation Details:**
+
+```python
+# Example: Asynchronous Bedrock API call
+import boto3
+from botocore.config import Config
+
+# Configure Bedrock client for us-east-1
+bedrock_config = Config(
+    region_name='us-east-1',
+    connect_timeout=5,
+    read_timeout=60,
+    retries={'max_attempts': 3}
+)
+
+bedrock_client = boto3.client('bedrock-runtime', config=bedrock_config)
+
+# All other services use af-south-1
+default_config = Config(region_name='af-south-1')
+cognito_client = boto3.client('cognito-idp', config=default_config)
+aurora_client = boto3.client('rds', config=default_config)
+```
+
+**Cost Implications:**
+- Cross-region data transfer: $0.02 per GB (af-south-1 → us-east-1)
+- Estimated monthly cost: $5-10 (assuming 250-500 GB of AI request/response data)
+- This is within the $200/month budget
+
+**Alternative Considered:**
+- Using OpenAI API instead of Bedrock: Rejected due to Assumption #1 (AWS-First)
+- Using eu-west-1 for Bedrock: Rejected due to higher latency to Nigeria (~250ms vs ~200ms)
+
+**Future Optimization:**
+- If Bedrock becomes available in af-south-1, migrate immediately
+- Monitor AWS service announcements for af-south-1 region updates
+
+---
+
+### 8.2. AWS Services to Provision (Phase 1)
 
 | Service | Purpose | Configuration |
 |---------|---------|---------------|
@@ -236,7 +339,7 @@ This document contains the bootstrap configuration for the WebWaka platform's AW
 | **Bedrock** | AI models | Claude 3 Sonnet access |
 | **Secrets Manager** | Secrets storage | Database credentials, API keys |
 
-### 8.2. Service Limits
+### 8.3. Service Limits
 
 **Request Increases (if needed):**
 - Fargate vCPU limit: Default 40 vCPUs (sufficient for development)

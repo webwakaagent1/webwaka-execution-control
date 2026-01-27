@@ -31,8 +31,10 @@ This document is the **execution prompt** for Phase 1. It will be issued by the 
 8. AWS S3 + CloudFront (Storage)
 9. AWS EventBridge (Events)
 10. AWS SQS (Queues)
-11. Service Workers + IndexedDB (Offline)
-12. PWA Manifest + Install Prompt
+11. AWS Bedrock (AI - cross-region in us-east-1)
+12. Service Workers + IndexedDB (Offline)
+13. PWA Manifest + Install Prompt
+14. Extensibility Framework (Plug-in system)
 
 ---
 
@@ -51,17 +53,63 @@ This document is the **execution prompt** for Phase 1. It will be issued by the 
 
 ### 1. AWS Account Information
 
-**REQUIRED BEFORE STARTING:**
+**AWS credentials are stored in GitHub Secrets and will be automatically available to the deployment pipeline.**
 
-The Founder must provide the following AWS account information:
+**Provided by Founder (2026-01-27):**
 
-- **AWS Account ID:** [TO BE PROVIDED]
-- **AWS Region:** [TO BE PROVIDED] (Recommended: us-east-1 or eu-west-1)
-- **AWS Access Key ID:** [TO BE PROVIDED]
-- **AWS Secret Access Key:** [TO BE PROVIDED]
-- **AWS IAM Role ARN:** [TO BE PROVIDED] (if using role-based access)
+- **AWS Account:** webwaka.agent.1@gmail.com
+- **AWS Region (Primary):** af-south-1 (Africa - Cape Town)
+- **AWS Region (Bedrock):** us-east-1 (N. Virginia) — Bedrock is NOT available in af-south-1
+- **AWS Access Key ID:** Stored in GitHub Secret `AWS_ACCESS_KEY_ID`
+- **AWS Secret Access Key:** Stored in GitHub Secret `AWS_SECRET_ACCESS_KEY`
+- **AWS Account ID:** Stored in GitHub Secret `AWS_ACCOUNT_ID`
 
-**Security Note:** These credentials must be stored securely and never committed to GitHub in plain text. Use environment variables or AWS Secrets Manager.
+**IAM Setup:**
+The Founder has completed (or will complete) the AWS IAM setup per `AWS_IAM_SETUP_GUIDE.md`, including:
+- Root account MFA enabled
+- IAM admin user created (`webwaka-founder-admin`)
+- IAM deployment user created (`webwaka-deployment-user`)
+- Budget alerts configured ($200/month)
+- CloudTrail enabled for audit logging
+
+**Security Note:**
+- All AWS credentials are stored in GitHub Secrets (encrypted)
+- Never commit credentials to GitHub in plain text
+- Access credentials via environment variables in GitHub Actions:
+  ```yaml
+  env:
+    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    AWS_REGION: ${{ secrets.AWS_REGION }}
+    AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  ```
+
+**Cross-Region Architecture:**
+
+**IMPORTANT:** AWS Bedrock is NOT available in af-south-1. You MUST use us-east-1 for Bedrock API calls.
+
+**Implementation:**
+- All services (Cognito, Aurora, Fargate, etc.) use af-south-1
+- Bedrock API calls use us-east-1
+- Bedrock calls MUST be asynchronous to mitigate cross-region latency (~200-300ms)
+- Use SQS queues to decouple Bedrock calls from user-facing requests
+- Implement caching for common AI responses
+
+**Example:**
+```python
+import boto3
+from botocore.config import Config
+
+# Bedrock client (us-east-1)
+bedrock_config = Config(region_name='us-east-1')
+bedrock_client = boto3.client('bedrock-runtime', config=bedrock_config)
+
+# All other services (af-south-1)
+default_config = Config(region_name='af-south-1')
+cognito_client = boto3.client('cognito-idp', config=default_config)
+```
+
+See `AWS_BOOTSTRAP_CONFIG.md` Section 8.1 for complete cross-region architecture details.
 
 ### 2. Repository Setup
 

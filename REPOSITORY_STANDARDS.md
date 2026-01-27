@@ -54,11 +54,65 @@ This document defines the standards for all WebWaka repositories, including nami
 - All work must be merged via pull request
 - No direct commits allowed
 - Requires Founder approval for phase-related merges
+- **Branch protection MUST be configured** (see Section 3.1.1)
 
 **`develop` (optional):**
 - Integration branch for ongoing development
 - Used for pre-production testing
 - Merged to `main` after verification
+
+### 3.1.1. Branch Protection Rules (REQUIRED)
+
+**The Founder MUST configure the following branch protection rules on the `main` branch:**
+
+**Required Settings:**
+1. ✅ **Require pull request reviews before merging**
+   - Minimum number of approvals: 1
+   - Dismiss stale pull request approvals when new commits are pushed: Enabled
+   - Require review from Code Owners: Disabled (no CODEOWNERS file yet)
+
+2. ✅ **Require status checks to pass before merging**
+   - Required status checks:
+     - `Phase Gate - Prevent Phase Skipping / Verify Phase Approval and Sequential Order`
+   - Require branches to be up to date before merging: Enabled
+
+3. ✅ **Require conversation resolution before merging**
+   - All PR comments must be resolved before merge
+
+4. ✅ **Require signed commits** (recommended but optional)
+   - Ensures commit authenticity
+
+5. ✅ **Require linear history** (recommended)
+   - Prevents merge commits, enforces rebase or squash
+
+6. ✅ **Include administrators** (recommended)
+   - Enforce rules for administrators too
+
+7. ✅ **Restrict who can push to matching branches**
+   - Only allow Founder and authorized Manus agents
+
+8. ✅ **Allow force pushes: DISABLED**
+   - Prevents history rewriting
+
+9. ✅ **Allow deletions: DISABLED**
+   - Prevents accidental branch deletion
+
+**How to Configure (GitHub UI):**
+1. Navigate to repository Settings
+2. Click "Branches" in left sidebar
+3. Click "Add branch protection rule"
+4. Set "Branch name pattern" to `main`
+5. Enable all settings listed above
+6. Click "Create" or "Save changes"
+
+**Verification:**
+The phase-gate workflow automatically checks if branch protection is enabled and reports warnings if not configured.
+
+**Why This Matters:**
+- Prevents accidental direct commits to `main`
+- Enforces code review process
+- Ensures phase-gate workflow runs before merge
+- Maintains execution control integrity
 
 ### 3.2. Feature Branches
 
@@ -134,7 +188,39 @@ Closes #123
 
 ## 5. Directory Structure Standards
 
-### 5.1. Root Directory Structure (for `webwaka-platform`)
+### 5.1. Root Directory Structure (for `webwaka-execution-control`)
+
+```
+webwaka-execution-control/
+├── .github/                 # GitHub Actions workflows
+│   └── workflows/
+│       └── phase-gate.yml   # Phase-gate enforcement workflow
+├── docs/                    # Additional documentation
+│   └── ASSUMPTION_VALIDATION.md  # Assumption validation procedures
+├── reports/                 # STOP-SAFE and verification reports
+│   ├── README.md            # Reports directory documentation
+│   ├── stop-safe-report-*.md      # STOP-SAFE reports
+│   └── phase-*-verification-report-*.md  # Phase verification reports
+├── scripts/                 # Automation scripts
+│   └── validate-assumptions.sh    # Foundational assumptions validator
+├── FOUNDATIONAL_ASSUMPTIONS.md    # 15 canonically locked assumptions
+├── GOVERNANCE.md                  # Core governance rules
+├── EXECUTION_PHASES.md            # Phase definitions with SMART exit criteria
+├── EXECUTION_LEDGER.md            # Execution history and phase status
+├── EXECUTION_LEDGER_STANDARDS.md  # Ledger structure standards
+├── VERIFICATION_STRATEGY.md       # Verification methods
+├── STOP_SAFE_PROTOCOL.md          # Emergency stop protocol
+├── REPOSITORY_STANDARDS.md        # Repository standards (this document)
+├── PLATFORM_INFRASTRUCTURE.md     # Infrastructure strategy
+├── AWS_BOOTSTRAP_CONFIG.md        # AWS configuration
+├── AWS_IAM_SETUP_GUIDE.md         # IAM setup instructions
+├── PHASE_0_VERIFICATION.md        # Phase 0 verification checklist
+├── PHASE_1_EXECUTION_PROMPT.md    # Phase 1 execution instructions
+├── .gitignore                     # Git ignore file
+└── README.md                      # Repository README
+```
+
+### 5.2. Root Directory Structure (for `webwaka-platform`)
 
 ```
 webwaka-platform/
@@ -154,7 +240,7 @@ webwaka-platform/
 └── LICENSE                  # License file
 ```
 
-### 5.2. Backend API Directory Structure
+### 5.3. Backend API Directory Structure
 
 ```
 packages/api/
@@ -174,7 +260,7 @@ packages/api/
 └── README.md                # Module README
 ```
 
-### 5.3. Frontend Web Directory Structure
+### 5.4. Frontend Web Directory Structure
 
 ```
 packages/web/

@@ -112,6 +112,24 @@ This ensures unbiased auditing and prevents blind spots.
 5. Implementing Manus addresses all CRITICAL and HIGH findings
 6. Founder reviews the remediation and grants approval
 
+**Founder Responsibility for IVM Independence:**
+
+**The Founder is responsible for manually verifying that the IVM is a different agent from the implementing Manus.**
+
+This verification cannot be automated and must be completed before granting approval.
+
+**Verification Steps:**
+1. Founder reviews the IVM report metadata (agent ID, session ID, timestamp)
+2. Founder compares with the implementing Manus metadata
+3. Founder confirms they are different agents (different sessions, different timestamps)
+4. If the same agent is detected, Founder rejects the verification and requests a new IVM
+5. Only after confirming independence can the Founder proceed with approval
+
+**Why This Matters:**
+- Self-verification creates blind spots and conflicts of interest
+- Independent verification ensures unbiased auditing
+- This is a critical governance safeguard that cannot be compromised
+
 ---
 
 ## 2. Phase Approval Process
@@ -120,19 +138,34 @@ This ensures unbiased auditing and prevents blind spots.
 
 At the end of each phase, the Founder must provide explicit, verifiable approval before the next phase may begin.
 
+**IMPORTANT: Only explicit approval via a GitHub issue with the `founder-approved` label is valid. Implicit approval (e.g., "Founder provided information") is NOT sufficient.**
+
 **Approval Steps:**
 
 1. **Manus creates a GitHub Issue** titled "Phase N Approval Request"
 2. The issue must include:
-   - Link to the phase verification report
-   - Link to the independent verification report (if applicable)
+   - Link to the phase completion report
+   - Link to the independent verification report
    - Summary of deliverables
    - Summary of exit criteria met
+   - Checklist confirming IVM independence
 3. **Founder reviews** the reports and all artifacts
-4. **If approved**, the Founder:
+4. **Founder verifies** that the IVM is independent (different agent from implementer)
+5. **If approved**, the Founder:
    - Adds the label `founder-approved` to the issue
    - Closes the issue with a comment: "APPROVED: Phase N is complete. Proceed to Phase N+1."
-5. **The approval is verified** by the phase-gate automation before Phase N+1 work can be merged to `main`
+   - Updates `EXECUTION_LEDGER.md` to mark the phase as "approved" with the issue number
+6. **The approval is verified** by the phase-gate automation before Phase N+1 work can be merged to `main`
+
+**Phase N Approval Checklist (for Founder):**
+- [ ] Phase N completion report reviewed
+- [ ] Independent verification report reviewed
+- [ ] IVM is confirmed to be independent (different agent from implementer)
+- [ ] All CRITICAL and HIGH findings have been addressed
+- [ ] All exit criteria are met
+- [ ] All deliverables are present and correct
+- [ ] Execution ledger is up to date
+- [ ] Ready to approve Phase N and proceed to Phase N+1
 
 **Non-Approval:**
 
@@ -142,6 +175,11 @@ If the Founder does not approve, they must:
 - The phase remains in "awaiting approval" status until all changes are addressed
 - Manus addresses the required changes and updates the issue
 - Process repeats until approval is granted
+
+**Implicit Approval is NOT Valid:**
+- Providing Phase N+1 requirements does NOT constitute Phase N approval
+- Approval MUST be explicit via GitHub issue with `founder-approved` label
+- This ensures clear audit trail and governance compliance
 
 ### 2.2. Approval Verification
 

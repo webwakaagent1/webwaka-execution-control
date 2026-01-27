@@ -93,7 +93,10 @@ This document defines the **strictly sequential execution phases** for the WebWa
 14. PWA Manifest + Install Prompt
 15. Extensibility Framework (Plug-in system)
 
-**Exit Criteria (SMART - Specific, Measurable, Achievable, Relevant, Time-bound):**
+**Exit Criteria:**
+
+**Technical Exit Criteria (1-13):** These must be met for the phase to be "technically complete."
+
 1. **AWS Infrastructure:** All 12 AWS services (Cognito, Aurora, Fargate, Amplify, SES, SNS, S3, CloudFront, EventBridge, SQS, Bedrock, Secrets Manager) are provisioned, configured, and verified via AWS Console
 2. **Authentication:** User can register, log in, log out, and reset password via Cognito; JWT tokens are validated on all API requests; session management works correctly
 3. **Backend API:** At least 5 core API endpoints (auth, health check, user profile, tenant context, event publish) are deployed to Fargate, return correct responses, and have response times < 500ms
@@ -107,7 +110,12 @@ This document defines the **strictly sequential execution phases** for the WebWa
 11. **Test Coverage:** Unit test coverage ≥ 80% for all new code; integration tests cover all API endpoints; E2E tests cover critical user flows (register, login, create tenant)
 12. **Documentation:** README.md, API documentation, deployment guide, and architecture diagrams are complete and accurate
 13. **Independent Verification:** Independent verification report shows zero CRITICAL findings and zero HIGH findings
-14. **Founder Approval:** Founder has reviewed the verification report and granted explicit approval via signed commit or GitHub issue comment
+
+**Approval (14):** This marks the phase as "officially complete."
+
+14. **Founder Approval:** Founder has reviewed the verification report and granted explicit approval via GitHub issue with `founder-approved` label
+
+**Note:** A phase is "technically complete" when criteria 1-13 are met. It is "officially complete" when criterion 14 (Founder approval) is met. Only after official completion can the next phase begin.
 
 **Verification Method:** Code phase verification (see VERIFICATION_STRATEGY.md Section 3.2)
 
