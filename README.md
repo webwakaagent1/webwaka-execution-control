@@ -86,6 +86,51 @@ webwaka-execution-control/
 
 ---
 
+## 🛠️ Ledger Automation Script (`scripts/ledger.py`)
+
+This script is the central tool for managing the `EXECUTION_LEDGER.md` file. It has been significantly enhanced with new features for improved usability and safety.
+
+### New Features:
+
+1.  **Detailed Validation Error Messages:** Provides clear, actionable feedback when validation rules are violated, helping users quickly understand and resolve issues.
+2.  **Dry-Run Mode:** Allows you to preview the effects of `update` and `approve` commands without making any permanent changes to the `EXECUTION_LEDGER.md` file. This is ideal for testing and verifying commands before execution.
+3.  **Rollback Functionality:** Automatically creates backups of the `EXECUTION_LEDGER.md` file before any write operation. You can easily revert to the most recent previous state if an error occurs or a change needs to be undone.
+
+### Usage:
+
+```bash
+python scripts/ledger.py <command> [arguments]
+```
+
+#### Commands:
+
+-   **`update --phase <PHASE> --status <STATUS> [--details <DETAILS>] [--dry-run]`**
+    -   Updates the status of a specific phase in the ledger.
+    -   `--phase`: The name of the phase (e.g., "Phase 0").
+    -   `--status`: The new status (e.g., "not_started", "in_progress", "complete", "approved").
+    -   `--details`: (Optional) Additional information about the update.
+    -   `--dry-run`: (Optional) Preview changes without saving them.
+
+-   **`approve --phase <PHASE> --issue <ISSUE_NUMBER> [--dry-run]`**
+    -   Records Founder approval for a phase, linking to a GitHub issue.
+    -   `--phase`: The name of the phase being approved.
+    -   `--issue`: The GitHub issue number associated with the approval.
+    -   `--dry-run`: (Optional) Preview changes without saving them.
+
+-   **`validate`**
+    -   Validates the structure and content of the `EXECUTION_LEDGER.md` file.
+    -   Provides detailed error messages for any inconsistencies.
+
+-   **`get-current-phase`**
+    -   Retrieves and prints the current active phase and its status from the ledger.
+
+-   **`rollback`**
+    -   Reverts the `EXECUTION_LEDGER.md` file to its most recent previous version using the latest backup.
+    -   A pre-rollback backup is automatically created for safety.
+
+-   **`list-backups`**
+    -   Lists all available backups of the `EXECUTION_LEDGER.md` file, including their creation timestamps and sizes.
+
 ## How to Use This Repository
 
 ### For AI Operators (Manus, Emergent, etc.)
@@ -112,6 +157,19 @@ webwaka-execution-control/
 **Last Updated:** 2026-01-26
 
 ---
+
+## 🌐 Access & Documentation
+
+-   **Approval Dashboard:** [https://webwakaagent1.github.io/webwaka-approval-dashboard/](https://webwakaagent1.github.io/webwaka-approval-dashboard/)
+-   **Notion Documentation Index:** [https://www.notion.so/2f5fb70870b58187a44af7ec2dd5fe44](https://www.notion.so/2f5fb70870b58187a44af7ec2dd5fe44)
+-   **GitHub Repository:** [https://github.com/webwakaagent1/webwaka-execution-control](https://github.com/webwakaagent1/webwaka-execution-control)
+
+## ⚠️ Critical Setup for Full Automation
+
+To fully enable the automation system, the Founder must perform these one-time actions:
+
+1.  **Add AWS Credentials to GitHub Secrets:** Configure `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in the repository secrets to enable AWS infrastructure provisioning.
+2.  **Approve Phase 0:** Use the Approval Dashboard to officially approve Phase 0, which will trigger the next phase of automation.
 
 ## Links
 
