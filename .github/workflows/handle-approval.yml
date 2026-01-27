@@ -1,0 +1,303 @@
+name: Handle Approval Request
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+jobs:
+  process-approval:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'approval') || contains(github.event.comment.body, '/approve')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Process approval
+        id: approve
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body || github.event.comment.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          APPROVER: ${{ github.event.issue.user.login || github.event.comment.user.login }}
+        run: |
+          python3 << 'EOF'
+          import re
+          import os
+          from datetime import datetime
+          
+          # Get environment variables
+          issue_body = os.environ.get('ISSUE_BODY', '')
+          issue_title = os.environ.get('ISSUE_TITLE', '')
+          issue_number = os.environ.get('ISSUE_NUMBER', '')
+          approver = os.environ.get('APPROVER', 'unknown')
+          
+          # Extract phase name from issue
+          phase_match = re.search(r'/approve\s+(.+?)(?:\n|$)', issue_body, re.IGNORECASE)
+          if not phase_match:
+              phase_match = re.search(r'Approve\s+(.+?)$', issue_title, re.IGNORECASE)
+          
+          if not phase_match:
+              print("❌ Could not extract phase name from issue")
+              exit(1)
+          
+          phase_name = phase_match.group(1).strip()
+          print(f"Processing approval for: {phase_name}")
+          
+          # Extract optional notes
+          notes_match = re.search(r'\*\*Notes:\*\*\s*\n(.+?)(?:\n---|$)', issue_body, re.DOTALL)
+          notes = notes_match.group(1).strip() if notes_match else "No additional notes"
+          
+          # Read EXECUTION_LEDGER.md
+          with open('EXECUTION_LEDGER.md', 'r') as f:
+              content = f.read()
+          
+          # Verify phase exists and is complete
+          phase_section_pattern = rf'###\s+{re.escape(phase_name)}\n\n\*\*Status:\*\*\s+`(.+?)`'
+          phase_match = re.search(phase_section_pattern, content)
+          
+          if not phase_match:
+              print(f"❌ Phase not found: {phase_name}")
+              exit(1)
+          
+          current_status = phase_match.group(1)
+          if current_status != 'complete':
+              print(f"❌ Phase is not complete (current status: {current_status})")
+              exit(1)
+          
+          # Update phase status to approved
+          updated_content = re.sub(
+              rf'(###\s+{re.escape(phase_name)}\n\n\*\*Status:\*\*\s+)`complete`',
+              r'\1`approved`',
+              content
+          )
+          
+          # Add approval record
+          approval_date = datetime.now().strftime('%Y-%m-%d')
+          approval_record = f"""
+- **Phase:** {phase_name} **approved** by {approver} on {approval_date}
+  - **GitHub Issue:** #{issue_number}
+  - **Notes:** {notes}
+"""
+          
+          # Find the approval history section and add the record
+          if '## Approval History' in updated_content:
+              updated_content = re.sub(
+                  r'(## Approval History\n\n)',
+                  r'\1' + approval_record + '\n',
+                  updated_content
+              )
+          else:
+              # Add approval history section if it doesn't exist
+              updated_content += f"\n\n## Approval History\n\n{approval_record}\n"
+          
+          # Write updated ledger
+          with open('EXECUTION_LEDGER.md', 'w') as f:
+              f.write(updated_content)
+          
+          print(f"✅ Approved: {phase_name}")
+          print(f"   Approver: {approver}")
+          print(f"   Date: {approval_date}")
+          print(f"   Issue: #{issue_number}")
+          
+          # Set output for next steps
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"phase_name={phase_name}\n")
+              f.write(f"approver={approver}\n")
+              f.write(f"approval_date={approval_date}\n")
+          EOF
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "webwaka.agent.1@gmail.com"
+          git config --local user.name "WebWaka Agent"
+          git add EXECUTION_LEDGER.md
+          git commit -m "feat: approve ${{ steps.approve.outputs.phase_name }} (issue #${{ github.event.issue.number }})"
+          git push
+      
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ **Approval Processed Successfully**\n\n**Phase:** ${{ steps.approve.outputs.phase_name }}\n**Approved by:** ${{ steps.approve.outputs.approver }}\n**Date:** ${{ steps.approve.outputs.approval_date }}\n\nThe execution ledger has been updated. A confirmation email will be sent shortly.`
+            })
+      
+      - name: Close issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed'
+            })
+      
+      - name: Send confirmation email
+        env:
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          NOTIFICATION_EMAIL_PASSWORD: ${{ secrets.NOTIFICATION_EMAIL_PASSWORD }}
+          FOUNDER_EMAIL: ${{ secrets.FOUNDER_EMAIL || secrets.NOTIFICATION_EMAIL }}
+          PHASE_NAME: ${{ steps.approve.outputs.phase_name }}
+          APPROVER: ${{ steps.approve.outputs.approver }}
+          APPROVAL_DATE: ${{ steps.approve.outputs.approval_date }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          python3 << 'EOF'
+          import smtplib
+          import os
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+          
+          # Get environment variables
+          sender_email = os.environ.get('NOTIFICATION_EMAIL')
+          sender_password = os.environ.get('NOTIFICATION_EMAIL_PASSWORD')
+          founder_email = os.environ.get('FOUNDER_EMAIL', sender_email)
+          phase_name = os.environ.get('PHASE_NAME', 'Unknown Phase')
+          approver = os.environ.get('APPROVER', 'unknown')
+          approval_date = os.environ.get('APPROVAL_DATE', 'unknown')
+          issue_number = os.environ.get('ISSUE_NUMBER', 'unknown')
+          
+          if not sender_email or not sender_password:
+              print("⚠️  Email credentials not configured")
+              exit(0)
+          
+          # Create HTML email
+          repo_url = "https://github.com/webwakaagent1/webwaka-execution-control"
+          dashboard_url = "https://webwakaagent1.github.io/webwaka-approval-dashboard/"
+          ledger_url = f"{repo_url}/blob/main/EXECUTION_LEDGER.md"
+          issue_url = f"{repo_url}/issues/{issue_number}"
+          
+          html_content = f"""
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <style>
+                  body {{
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                      line-height: 1.6;
+                      color: #333;
+                      max-width: 600px;
+                      margin: 0 auto;
+                      padding: 20px;
+                  }}
+                  .header {{
+                      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                      color: white;
+                      padding: 30px;
+                      border-radius: 10px 10px 0 0;
+                      text-align: center;
+                  }}
+                  .header h1 {{
+                      margin: 0;
+                      font-size: 24px;
+                  }}
+                  .content {{
+                      background: #f8f9fa;
+                      padding: 30px;
+                      border-radius: 0 0 10px 10px;
+                  }}
+                  .approval-info {{
+                      background: white;
+                      padding: 20px;
+                      border-radius: 8px;
+                      margin: 20px 0;
+                      border-left: 4px solid #28a745;
+                  }}
+                  .approval-info h2 {{
+                      margin-top: 0;
+                      color: #28a745;
+                  }}
+                  .button {{
+                      display: inline-block;
+                      padding: 12px 30px;
+                      margin: 10px 5px;
+                      background: #28a745;
+                      color: white;
+                      text-decoration: none;
+                      border-radius: 6px;
+                      font-weight: bold;
+                  }}
+                  .button:hover {{
+                      background: #218838;
+                  }}
+                  .footer {{
+                      text-align: center;
+                      margin-top: 30px;
+                      padding-top: 20px;
+                      border-top: 1px solid #dee2e6;
+                      color: #6c757d;
+                      font-size: 14px;
+                  }}
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>✅ Approval Confirmed</h1>
+                  <p>WebWaka Execution Control</p>
+              </div>
+              
+              <div class="content">
+                  <p>Dear Founder,</p>
+                  
+                  <p>Your approval has been successfully processed and recorded.</p>
+                  
+                  <div class="approval-info">
+                      <h2>{phase_name}</h2>
+                      <p><strong>Status:</strong> Approved ✅</p>
+                      <p><strong>Approved by:</strong> {approver}</p>
+                      <p><strong>Approval date:</strong> {approval_date}</p>
+                      <p><strong>GitHub Issue:</strong> <a href="{issue_url}">#{issue_number}</a></p>
+                  </div>
+                  
+                  <p>The execution ledger has been updated to reflect this approval. You can now proceed with the next phase.</p>
+                  
+                  <div style="text-align: center; margin: 30px 0;">
+                      <a href="{dashboard_url}" class="button">View Dashboard</a>
+                      <a href="{ledger_url}" class="button">View Ledger</a>
+                  </div>
+                  
+                  <div class="footer">
+                      <p>
+                          <a href="{repo_url}" style="color: #28a745;">GitHub Repository</a>
+                      </p>
+                      <p>WebWaka Automated Approval System</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          """
+          
+          # Create message
+          message = MIMEMultipart('alternative')
+          message['Subject'] = f"WebWaka: {phase_name} Approved Successfully"
+          message['From'] = sender_email
+          message['To'] = founder_email
+          
+          # Attach HTML content
+          html_part = MIMEText(html_content, 'html')
+          message.attach(html_part)
+          
+          # Send email
+          try:
+              with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                  server.login(sender_email, sender_password)
+                  server.sendmail(sender_email, founder_email, message.as_string())
+              
+              print(f"✅ Sent confirmation email for: {phase_name}")
+          except Exception as e:
+              print(f"❌ Failed to send email: {str(e)}")
+          EOF

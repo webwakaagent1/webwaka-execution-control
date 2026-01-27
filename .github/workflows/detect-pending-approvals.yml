@@ -1,0 +1,108 @@
+name: Detect Pending Approvals
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'EXECUTION_LEDGER.md'
+  schedule:
+    # Run every 5 minutes to check for pending approvals
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  detect-pending:
+    runs-on: ubuntu-latest
+    outputs:
+      has_pending: ${{ steps.check.outputs.has_pending }}
+      pending_phases: ${{ steps.check.outputs.pending_phases }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Check for pending approvals
+        id: check
+        run: |
+          python3 << 'EOF'
+          import re
+          import json
+          import os
+          
+          # Read EXECUTION_LEDGER.md
+          with open('EXECUTION_LEDGER.md', 'r') as f:
+              content = f.read()
+          
+          # Extract phase entries
+          phase_pattern = r'###\s+(.+?)\n\n\*\*Status:\*\*\s+`(.+?)`'
+          phases = re.findall(phase_pattern, content, re.MULTILINE)
+          
+          # Find phases that are complete but not approved
+          pending_approvals = []
+          for phase_name, status in phases:
+              if status == 'complete':
+                  # Check if there's an approval record for this phase
+                  approval_pattern = rf'- \*\*Phase:\*\*\s+{re.escape(phase_name)}\s+\*\*approved\*\*'
+                  if not re.search(approval_pattern, content):
+                      # Extract phase details
+                      phase_section_pattern = rf'###\s+{re.escape(phase_name)}\n\n(.+?)(?=###|\Z)'
+                      phase_section = re.search(phase_section_pattern, content, re.DOTALL)
+                      
+                      if phase_section:
+                          section_text = phase_section.group(1)
+                          
+                          # Extract start date
+                          start_match = re.search(r'\*\*Started:\*\*\s+(.+?)(?:\n|$)', section_text)
+                          start_date = start_match.group(1) if start_match else 'Unknown'
+                          
+                          # Extract last updated
+                          updated_match = re.search(r'\*\*Last Updated:\*\*\s+(.+?)(?:\n|$)', section_text)
+                          last_updated = updated_match.group(1) if updated_match else 'Unknown'
+                          
+                          # Extract exit criteria
+                          criteria_pattern = r'-\s+\[x\]\s+(.+?)(?:\n|$)'
+                          criteria = re.findall(criteria_pattern, section_text)
+                          
+                          pending_approvals.append({
+                              'phase': phase_name,
+                              'status': status,
+                              'started': start_date,
+                              'last_updated': last_updated,
+                              'criteria_count': len(criteria),
+                              'criteria': criteria[:5]  # First 5 criteria for email
+                          })
+          
+          # Output results
+          has_pending = len(pending_approvals) > 0
+          print(f"has_pending={str(has_pending).lower()}")
+          print(f"pending_phases={json.dumps(pending_approvals)}")
+          
+          # Set outputs for GitHub Actions
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"has_pending={str(has_pending).lower()}\n")
+              f.write(f"pending_phases={json.dumps(pending_approvals)}\n")
+          
+          # Print summary
+          if has_pending:
+              print(f"\n✅ Found {len(pending_approvals)} pending approval(s):")
+              for p in pending_approvals:
+                  print(f"  - {p['phase']} (completed {p['last_updated']})")
+          else:
+              print("\n✅ No pending approvals found")
+          EOF
+      
+      - name: Trigger notification workflow
+        if: steps.check.outputs.has_pending == 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: pending-approvals-detected
+          client-payload: |
+            {
+              "pending_phases": ${{ steps.check.outputs.pending_phases }}
+            }

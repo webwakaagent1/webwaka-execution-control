@@ -1,0 +1,263 @@
+name: Notify Pending Approvals
+
+on:
+  repository_dispatch:
+    types: [pending-approvals-detected]
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode (send to test email)'
+        required: false
+        default: 'false'
+
+jobs:
+  send-notifications:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Send email notifications
+        env:
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          NOTIFICATION_EMAIL_PASSWORD: ${{ secrets.NOTIFICATION_EMAIL_PASSWORD }}
+          FOUNDER_EMAIL: ${{ secrets.FOUNDER_EMAIL || secrets.NOTIFICATION_EMAIL }}
+          PENDING_PHASES: ${{ github.event.client_payload.pending_phases || '[]' }}
+        run: |
+          python3 << 'EOF'
+          import smtplib
+          import json
+          import os
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+          from datetime import datetime
+          
+          # Get environment variables
+          sender_email = os.environ.get('NOTIFICATION_EMAIL')
+          sender_password = os.environ.get('NOTIFICATION_EMAIL_PASSWORD')
+          founder_email = os.environ.get('FOUNDER_EMAIL', sender_email)
+          pending_phases_json = os.environ.get('PENDING_PHASES', '[]')
+          
+          # Parse pending phases
+          try:
+              pending_phases = json.loads(pending_phases_json)
+          except:
+              pending_phases = []
+          
+          if not pending_phases:
+              print("No pending approvals to notify")
+              exit(0)
+          
+          if not sender_email or not sender_password:
+              print("⚠️  Email credentials not configured")
+              print("Please add NOTIFICATION_EMAIL and NOTIFICATION_EMAIL_PASSWORD secrets")
+              exit(0)
+          
+          # Create email for each pending phase
+          for phase in pending_phases:
+              phase_name = phase.get('phase', 'Unknown Phase')
+              phase_status = phase.get('status', 'unknown')
+              last_updated = phase.get('last_updated', 'Unknown')
+              criteria = phase.get('criteria', [])
+              criteria_count = phase.get('criteria_count', 0)
+              
+              # Generate approval link (GitHub issue with pre-filled template)
+              repo_url = "https://github.com/webwakaagent1/webwaka-execution-control"
+              issue_title = f"Approve {phase_name}"
+              issue_body = f"""## Approval Request
+
+**Phase:** {phase_name}
+**Status:** {phase_status}
+**Completed:** {last_updated}
+
+### Exit Criteria Met ({criteria_count})
+
+{chr(10).join([f'- ✅ {c}' for c in criteria])}
+
+### Approval
+
+I have reviewed the phase deliverables and confirm that all exit criteria have been met.
+
+**Approved by:** @webwakaagent1
+**Approval date:** {datetime.now().strftime('%Y-%m-%d')}
+
+**Notes:**
+<!-- Add any additional comments here -->
+
+---
+
+/approve {phase_name}
+"""
+              
+              issue_url = f"{repo_url}/issues/new?title={issue_title}&body={issue_body}&labels=approval,{phase_name.lower().replace(' ', '-')}"
+              dashboard_url = "https://webwakaagent1.github.io/webwaka-approval-dashboard/"
+              ledger_url = f"{repo_url}/blob/main/EXECUTION_LEDGER.md"
+              
+              # Create HTML email
+              html_content = f"""
+              <!DOCTYPE html>
+              <html>
+              <head>
+                  <style>
+                      body {{
+                          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                          line-height: 1.6;
+                          color: #333;
+                          max-width: 600px;
+                          margin: 0 auto;
+                          padding: 20px;
+                      }}
+                      .header {{
+                          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                          color: white;
+                          padding: 30px;
+                          border-radius: 10px 10px 0 0;
+                          text-align: center;
+                      }}
+                      .header h1 {{
+                          margin: 0;
+                          font-size: 24px;
+                      }}
+                      .content {{
+                          background: #f8f9fa;
+                          padding: 30px;
+                          border-radius: 0 0 10px 10px;
+                      }}
+                      .phase-info {{
+                          background: white;
+                          padding: 20px;
+                          border-radius: 8px;
+                          margin: 20px 0;
+                          border-left: 4px solid #667eea;
+                      }}
+                      .phase-info h2 {{
+                          margin-top: 0;
+                          color: #667eea;
+                      }}
+                      .criteria {{
+                          background: white;
+                          padding: 20px;
+                          border-radius: 8px;
+                          margin: 20px 0;
+                      }}
+                      .criteria ul {{
+                          margin: 10px 0;
+                          padding-left: 20px;
+                      }}
+                      .criteria li {{
+                          margin: 8px 0;
+                          color: #28a745;
+                      }}
+                      .button {{
+                          display: inline-block;
+                          padding: 12px 30px;
+                          margin: 10px 5px;
+                          background: #667eea;
+                          color: white;
+                          text-decoration: none;
+                          border-radius: 6px;
+                          font-weight: bold;
+                      }}
+                      .button:hover {{
+                          background: #5568d3;
+                      }}
+                      .button-secondary {{
+                          background: #6c757d;
+                      }}
+                      .button-secondary:hover {{
+                          background: #5a6268;
+                      }}
+                      .footer {{
+                          text-align: center;
+                          margin-top: 30px;
+                          padding-top: 20px;
+                          border-top: 1px solid #dee2e6;
+                          color: #6c757d;
+                          font-size: 14px;
+                      }}
+                      .status-badge {{
+                          display: inline-block;
+                          padding: 4px 12px;
+                          background: #28a745;
+                          color: white;
+                          border-radius: 12px;
+                          font-size: 14px;
+                          font-weight: bold;
+                      }}
+                  </style>
+              </head>
+              <body>
+                  <div class="header">
+                      <h1>🎯 Approval Required</h1>
+                      <p>WebWaka Execution Control</p>
+                  </div>
+                  
+                  <div class="content">
+                      <p>Dear Founder,</p>
+                      
+                      <p><strong>{phase_name}</strong> is now <span class="status-badge">COMPLETE</span> and ready for your approval.</p>
+                      
+                      <div class="phase-info">
+                          <h2>{phase_name}</h2>
+                          <p><strong>Status:</strong> {phase_status}</p>
+                          <p><strong>Completed:</strong> {last_updated}</p>
+                      </div>
+                      
+                      <div class="criteria">
+                          <h3>Exit Criteria Met ({criteria_count})</h3>
+                          <ul>
+                              {''.join([f'<li>✅ {c}</li>' for c in criteria[:5]])}
+                              {f'<li>... and {criteria_count - 5} more</li>' if criteria_count > 5 else ''}
+                          </ul>
+                      </div>
+                      
+                      <div style="text-align: center; margin: 30px 0;">
+                          <a href="{issue_url}" class="button">Approve Now</a>
+                          <a href="{dashboard_url}" class="button button-secondary">View Dashboard</a>
+                      </div>
+                      
+                      <p style="font-size: 14px; color: #6c757d;">
+                          Click "Approve Now" to open a pre-filled approval form on GitHub. 
+                          Review the details and submit to approve this phase.
+                      </p>
+                      
+                      <div class="footer">
+                          <p>
+                              <a href="{ledger_url}" style="color: #667eea;">View Execution Ledger</a> | 
+                              <a href="{repo_url}" style="color: #667eea;">GitHub Repository</a>
+                          </p>
+                          <p>WebWaka Automated Approval System</p>
+                      </div>
+                  </div>
+              </body>
+              </html>
+              """
+              
+              # Create message
+              message = MIMEMultipart('alternative')
+              message['Subject'] = f"WebWaka: {phase_name} Ready for Approval"
+              message['From'] = sender_email
+              message['To'] = founder_email
+              
+              # Attach HTML content
+              html_part = MIMEText(html_content, 'html')
+              message.attach(html_part)
+              
+              # Send email
+              try:
+                  with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                      server.login(sender_email, sender_password)
+                      server.sendmail(sender_email, founder_email, message.as_string())
+                  
+                  print(f"✅ Sent approval notification for: {phase_name}")
+              except Exception as e:
+                  print(f"❌ Failed to send email for {phase_name}: {str(e)}")
+          
+          print(f"\n📧 Sent {len(pending_phases)} approval notification(s)")
+          EOF
