@@ -96,3 +96,29 @@ output "vpc_flow_log_group_name" {
   description = "Name of CloudWatch Log Group for VPC Flow Logs"
   value       = aws_cloudwatch_log_group.vpc_flow_log.name
 }
+
+# Database outputs
+output "database_cluster_endpoint" {
+  description = "Aurora PostgreSQL cluster endpoint"
+  value       = aws_rds_cluster.postgresql.endpoint
+}
+
+output "database_reader_endpoint" {
+  description = "Aurora PostgreSQL cluster reader endpoint"
+  value       = aws_rds_cluster.postgresql.reader_endpoint
+}
+
+output "database_port" {
+  description = "Database port"
+  value       = aws_rds_cluster.postgresql.port
+}
+
+output "database_name" {
+  description = "Database name"
+  value       = aws_rds_cluster.postgresql.database_name
+}
+
+output "database_cluster_id" {
+  description = "Database cluster identifier"
+  value       = aws_rds_cluster.postgresql.id
+}

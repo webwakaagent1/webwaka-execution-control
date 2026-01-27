@@ -59,3 +59,29 @@ variable "common_tags" {
     Phase       = "Phase1"
   }
 }
+
+# Database variables
+variable "database_name" {
+  description = "Name of the default database"
+  type        = string
+  default     = "webwaka"
+}
+
+variable "database_master_username" {
+  description = "Master username for the database"
+  type        = string
+  default     = "webwaka_admin"
+  sensitive   = true
+}
+
+variable "database_master_password" {
+  description = "Master password for the database"
+  type        = string
+  sensitive   = true
+}
+
+variable "database_instance_class" {
+  description = "Instance class for database instances"
+  type        = string
+  default     = "db.t3.medium"
+}
