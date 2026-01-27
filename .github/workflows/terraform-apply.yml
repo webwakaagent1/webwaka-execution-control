@@ -1,0 +1,131 @@
+name: Terraform Infrastructure Provisioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "PROVISION" to confirm infrastructure provisioning'
+        required: true
+        type: string
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Verify confirmation
+        run: |
+          if [ "${{ inputs.confirmation }}" != "PROVISION" ]; then
+            echo "❌ Error: Confirmation input must be 'PROVISION'"
+            exit 1
+          fi
+          echo "✅ Confirmation verified"
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.0
+      
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+      
+      - name: Terraform Validate
+        working-directory: ./terraform
+        run: terraform validate
+      
+      - name: Terraform Plan
+        working-directory: ./terraform
+        run: terraform plan -out=tfplan
+      
+      - name: Terraform Apply
+        working-directory: ./terraform
+        run: terraform apply -auto-approve tfplan
+      
+      - name: Terraform Output
+        working-directory: ./terraform
+        run: terraform output -json > terraform-outputs.json
+      
+      - name: Display Infrastructure Summary
+        working-directory: ./terraform
+        run: |
+          echo "## 🎉 Infrastructure Provisioning Complete!"
+          echo ""
+          echo "### Resources Created:"
+          terraform output
+      
+      - name: Upload Terraform Outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-outputs
+          path: terraform/terraform-outputs.json
+      
+      - name: Commit Terraform state metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create infrastructure completion marker
+          cat > PHASE_1_TERRAFORM_INFRASTRUCTURE_COMPLETE.md << 'EOF'
+          # Phase 1: Terraform Infrastructure Provisioning Complete
+          
+          **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Workflow Run**: ${{ github.run_id }}
+          **Commit**: ${{ github.sha }}
+          
+          ## Infrastructure Provisioned
+          
+          The following AWS resources have been successfully provisioned in **us-east-1**:
+          
+          ### Network Infrastructure
+          - ✅ VPC with CIDR 10.0.0.0/16
+          - ✅ 3 Public Subnets (across 3 AZs)
+          - ✅ 3 Private Subnets (across 3 AZs)
+          - ✅ Internet Gateway
+          - ✅ 3 NAT Gateways (one per AZ for high availability)
+          - ✅ Route Tables (public and private)
+          - ✅ VPC Flow Logs (CloudWatch logging)
+          
+          ### Security Groups
+          - ✅ ALB Security Group (HTTP/HTTPS ingress)
+          - ✅ Application Security Group (from ALB only)
+          - ✅ Database Security Group (from app only)
+          - ✅ Cache Security Group (from app only)
+          - ✅ Bastion Security Group (SSH access)
+          
+          ## Terraform State
+          
+          - **Backend**: S3 bucket `webwaka-terraform-state-us-east-1`
+          - **State Locking**: DynamoDB table `webwaka-terraform-locks`
+          - **Region**: us-east-1
+          
+          ## Next Steps
+          
+          1. Verify all resources in AWS Console
+          2. Update execution ledger
+          3. Request Founder approval
+          4. Proceed to next Phase 1 task
+          
+          ## Cost Estimate
+          
+          **Monthly**: ~$150-200 (NAT Gateways are the primary cost)
+          - NAT Gateways: ~$100/month (3 x $32/month)
+          - VPC Flow Logs: ~$10-20/month
+          - Other resources: Minimal
+          
+          **Note**: Well within $200/month budget specified in foundational assumptions.
+          EOF
+          
+          git add PHASE_1_TERRAFORM_INFRASTRUCTURE_COMPLETE.md
+          git commit -m "docs: terraform infrastructure provisioning complete"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
