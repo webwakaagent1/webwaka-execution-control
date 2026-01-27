@@ -9,58 +9,227 @@ on:
 jobs:
   phase-gate-check:
     runs-on: ubuntu-latest
-    name: Verify Phase Approval Before Merge
+    name: Verify Phase Approval and Sequential Order
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Check for Phase Approval
-        id: check-approval
+        with:
+          fetch-depth: 0  # Fetch all history for phase order verification
+      
+      - name: Install yq for YAML parsing
         run: |
-          echo "Checking for phase approval..."
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+      
+      - name: Validate Foundational Assumptions
+        run: |
+          echo "========================================="
+          echo "Validating Foundational Assumptions"
+          echo "========================================="
           
-          # Extract current phase from commit message or PR title
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Commit message: $COMMIT_MSG"
+          if [ -f "scripts/validate-assumptions.sh" ]; then
+            chmod +x scripts/validate-assumptions.sh
+            ./scripts/validate-assumptions.sh
+          else
+            echo "⚠️  Warning: Assumption validation script not found"
+            echo "Expected: scripts/validate-assumptions.sh"
+            echo "This is acceptable in Phase 0, but required in Phase 1+"
+          fi
+      
+      - name: Parse Execution Ledger
+        id: parse-ledger
+        run: |
+          echo "========================================="
+          echo "Parsing Execution Ledger"
+          echo "========================================="
           
-          # Check if this is a phase advancement commit
-          if [[ "$COMMIT_MSG" =~ Phase[[:space:]]([0-9]+) ]]; then
+          if [ ! -f "EXECUTION_LEDGER.md" ]; then
+            echo "❌ ERROR: EXECUTION_LEDGER.md not found"
+            exit 1
+          fi
+          
+          # Extract YAML front matter
+          CURRENT_PHASE=$(yq eval '.current_phase' EXECUTION_LEDGER.md)
+          PHASE_STATUS=$(yq eval '.phase_status' EXECUTION_LEDGER.md)
+          APPROVAL_ISSUE=$(yq eval '.approval_issue_number' EXECUTION_LEDGER.md)
+          LAST_UPDATED=$(yq eval '.last_updated' EXECUTION_LEDGER.md)
+          
+          echo "Current Phase: $CURRENT_PHASE"
+          echo "Phase Status: $PHASE_STATUS"
+          echo "Approval Issue: $APPROVAL_ISSUE"
+          echo "Last Updated: $LAST_UPDATED"
+          
+          # Validate required fields
+          if [ -z "$CURRENT_PHASE" ] || [ "$CURRENT_PHASE" == "null" ]; then
+            echo "❌ ERROR: current_phase is missing or null in EXECUTION_LEDGER.md"
+            exit 1
+          fi
+          
+          if [ -z "$PHASE_STATUS" ] || [ "$PHASE_STATUS" == "null" ]; then
+            echo "❌ ERROR: phase_status is missing or null in EXECUTION_LEDGER.md"
+            exit 1
+          fi
+          
+          # Validate phase_status value
+          if [[ ! "$PHASE_STATUS" =~ ^(in_progress|complete|approved)$ ]]; then
+            echo "❌ ERROR: phase_status must be one of: in_progress, complete, approved"
+            echo "Current value: $PHASE_STATUS"
+            exit 1
+          fi
+          
+          # Export for next steps
+          echo "current_phase=$CURRENT_PHASE" >> $GITHUB_OUTPUT
+          echo "phase_status=$PHASE_STATUS" >> $GITHUB_OUTPUT
+          echo "approval_issue=$APPROVAL_ISSUE" >> $GITHUB_OUTPUT
+      
+      - name: Verify Sequential Phase Order
+        run: |
+          echo "========================================="
+          echo "Verifying Sequential Phase Order"
+          echo "========================================="
+          
+          CURRENT_PHASE="${{ steps.parse-ledger.outputs.current_phase }}"
+          
+          # Extract phase number
+          if [[ "$CURRENT_PHASE" =~ Phase[[:space:]]([0-9]+) ]]; then
             PHASE_NUM="${BASH_REMATCH[1]}"
-            echo "Detected Phase $PHASE_NUM advancement"
+            echo "Current phase number: $PHASE_NUM"
             
-            # Check for approval issue
-            APPROVAL_ISSUE=$(gh issue list --label "founder-approved" --search "Phase $PHASE_NUM Approval" --state closed --json number,title --jq '.[0].number')
-            
-            if [ -z "$APPROVAL_ISSUE" ]; then
-              echo "❌ ERROR: No founder-approved issue found for Phase $PHASE_NUM"
-              echo "Required: A closed GitHub issue titled 'Phase $PHASE_NUM Approval Request' with label 'founder-approved'"
-              exit 1
+            # If this is Phase 1 or later, verify previous phase is approved
+            if [ "$PHASE_NUM" -gt 0 ]; then
+              PREV_PHASE_NUM=$((PHASE_NUM - 1))
+              echo "Checking if Phase $PREV_PHASE_NUM is approved..."
+              
+              # Check execution history for previous phase approval
+              if grep -q "Phase $PREV_PHASE_NUM.*approved" EXECUTION_LEDGER.md; then
+                echo "✅ Phase $PREV_PHASE_NUM is approved"
+              else
+                echo "❌ ERROR: Phase $PREV_PHASE_NUM is not approved"
+                echo "Cannot proceed to Phase $PHASE_NUM until Phase $PREV_PHASE_NUM is approved"
+                exit 1
+              fi
             else
-              echo "✅ Found approval issue #$APPROVAL_ISSUE for Phase $PHASE_NUM"
+              echo "ℹ️  This is Phase 0 (no previous phase to check)"
             fi
           else
-            echo "ℹ️  No phase advancement detected in commit message. Skipping approval check."
+            echo "⚠️  Warning: Could not extract phase number from: $CURRENT_PHASE"
+          fi
+      
+      - name: Check for Founder Approval
+        run: |
+          echo "========================================="
+          echo "Checking for Founder Approval"
+          echo "========================================="
+          
+          PHASE_STATUS="${{ steps.parse-ledger.outputs.phase_status }}"
+          APPROVAL_ISSUE="${{ steps.parse-ledger.outputs.approval_issue }}"
+          CURRENT_PHASE="${{ steps.parse-ledger.outputs.current_phase }}"
+          
+          echo "Phase Status: $PHASE_STATUS"
+          echo "Approval Issue: $APPROVAL_ISSUE"
+          
+          # If phase is marked as "approved", verify approval issue exists
+          if [ "$PHASE_STATUS" == "approved" ]; then
+            if [ "$APPROVAL_ISSUE" == "null" ] || [ -z "$APPROVAL_ISSUE" ]; then
+              echo "❌ ERROR: Phase is marked as 'approved' but no approval_issue_number is set"
+              exit 1
+            fi
+            
+            # Remove '#' prefix if present
+            ISSUE_NUM="${APPROVAL_ISSUE#\#}"
+            
+            echo "Verifying approval issue #$ISSUE_NUM..."
+            
+            # Check if issue exists and has founder-approved label
+            ISSUE_INFO=$(gh issue view "$ISSUE_NUM" --json labels,state,title 2>&1)
+            
+            if [ $? -ne 0 ]; then
+              echo "❌ ERROR: Approval issue #$ISSUE_NUM does not exist"
+              exit 1
+            fi
+            
+            # Check if issue has founder-approved label
+            if echo "$ISSUE_INFO" | grep -q "founder-approved"; then
+              echo "✅ Issue #$ISSUE_NUM has 'founder-approved' label"
+            else
+              echo "❌ ERROR: Issue #$ISSUE_NUM does not have 'founder-approved' label"
+              exit 1
+            fi
+            
+            # Check if issue is closed
+            if echo "$ISSUE_INFO" | grep -q '"state":"CLOSED"'; then
+              echo "✅ Issue #$ISSUE_NUM is closed"
+            else
+              echo "⚠️  Warning: Issue #$ISSUE_NUM is not closed (but has founder-approved label)"
+            fi
+            
+            echo "✅ Founder approval verified for $CURRENT_PHASE"
+          elif [ "$PHASE_STATUS" == "complete" ]; then
+            echo "ℹ️  Phase is marked as 'complete' (awaiting Founder approval)"
+            echo "Merge is allowed for completion work, but phase cannot transition until approved"
+          elif [ "$PHASE_STATUS" == "in_progress" ]; then
+            echo "ℹ️  Phase is marked as 'in_progress' (work ongoing)"
+            echo "Merge is allowed for in-progress work"
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Verify Sequential Phase Order
+      - name: Verify Branch Protection
         run: |
-          echo "Verifying sequential phase order..."
+          echo "========================================="
+          echo "Verifying Branch Protection"
+          echo "========================================="
           
-          # Check if phases are being skipped
-          # This is a placeholder for more sophisticated logic
-          # In practice, this would check the EXECUTION_LEDGER.md for phase completion
+          # Check if branch protection is enabled on main
+          PROTECTION_INFO=$(gh api repos/${{ github.repository }}/branches/main/protection 2>&1)
           
-          echo "✅ Phase order verification complete"
+          if [ $? -eq 0 ]; then
+            echo "✅ Branch protection is enabled on 'main'"
+            
+            # Check for required status checks
+            if echo "$PROTECTION_INFO" | grep -q "required_status_checks"; then
+              echo "✅ Required status checks are configured"
+            else
+              echo "⚠️  Warning: No required status checks configured"
+            fi
+            
+            # Check for required pull request reviews
+            if echo "$PROTECTION_INFO" | grep -q "required_pull_request_reviews"; then
+              echo "✅ Required pull request reviews are configured"
+            else
+              echo "⚠️  Warning: No required pull request reviews configured"
+            fi
+          else
+            echo "⚠️  Warning: Branch protection is not enabled on 'main'"
+            echo "This should be configured by the Founder (see H1 in REQUIREDFIXESBEFOREPHASE1.md)"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Report Status
         if: always()
         run: |
-          if [ "${{ steps.check-approval.outcome }}" == "success" ]; then
-            echo "✅ Phase gate check passed. Merge is allowed."
+          echo "========================================="
+          echo "Phase Gate Check Summary"
+          echo "========================================="
+          echo ""
+          echo "Current Phase: ${{ steps.parse-ledger.outputs.current_phase }}"
+          echo "Phase Status: ${{ steps.parse-ledger.outputs.phase_status }}"
+          echo "Approval Issue: ${{ steps.parse-ledger.outputs.approval_issue }}"
+          echo ""
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Phase gate check PASSED. Merge is allowed."
           else
-            echo "❌ Phase gate check failed. Merge is blocked."
+            echo "❌ Phase gate check FAILED. Merge is blocked."
+            echo ""
+            echo "Common reasons for failure:"
+            echo "  - Previous phase is not approved"
+            echo "  - Approval issue does not exist or lacks 'founder-approved' label"
+            echo "  - EXECUTION_LEDGER.md is malformed or missing required fields"
+            echo "  - Foundational assumptions are violated"
+            echo ""
+            echo "See job logs above for details."
             exit 1
           fi
