@@ -122,3 +122,70 @@ output "database_cluster_id" {
   description = "Database cluster identifier"
   value       = aws_rds_cluster.postgresql.id
 }
+
+# Cognito outputs
+output "cognito_user_pool_id" {
+  description = "ID of the Cognito User Pool"
+  value       = aws_cognito_user_pool.main.id
+}
+
+output "cognito_user_pool_arn" {
+  description = "ARN of the Cognito User Pool"
+  value       = aws_cognito_user_pool.main.arn
+}
+
+output "cognito_user_pool_endpoint" {
+  description = "Endpoint of the Cognito User Pool"
+  value       = aws_cognito_user_pool.main.endpoint
+}
+
+output "cognito_web_client_id" {
+  description = "ID of the Cognito Web Client"
+  value       = aws_cognito_user_pool_client.web.id
+}
+
+output "cognito_domain" {
+  description = "Cognito User Pool Domain"
+  value       = aws_cognito_user_pool_domain.main.domain
+}
+
+output "cognito_identity_pool_id" {
+  description = "ID of the Cognito Identity Pool"
+  value       = aws_cognito_identity_pool.main.id
+}
+
+# ECS/Fargate outputs
+output "ecs_cluster_id" {
+  description = "ID of the ECS cluster"
+  value       = aws_ecs_cluster.main.id
+}
+
+output "ecs_cluster_name" {
+  description = "Name of the ECS cluster"
+  value       = aws_ecs_cluster.main.name
+}
+
+output "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer"
+  value       = aws_lb.main.dns_name
+}
+
+output "alb_arn" {
+  description = "ARN of the Application Load Balancer"
+  value       = aws_lb.main.arn
+}
+
+output "alb_zone_id" {
+  description = "Zone ID of the Application Load Balancer"
+  value       = aws_lb.main.zone_id
+}
+
+output "ecr_repository_url" {
+  description = "URL of the ECR repository for API images"
+  value       = aws_ecr_repository.api.repository_url
+}
+
+output "ecs_service_name" {
+  description = "Name of the ECS service"
+  value       = aws_ecs_service.api.name
+}

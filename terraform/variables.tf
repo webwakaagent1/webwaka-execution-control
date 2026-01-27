@@ -85,3 +85,16 @@ variable "database_instance_class" {
   type        = string
   default     = "db.t3.medium"
 }
+
+# Cognito variables
+variable "cognito_callback_urls" {
+  description = "List of allowed callback URLs for Cognito"
+  type        = list(string)
+  default     = ["http://localhost:3000/callback", "https://app.webwaka.com/callback"]
+}
+
+variable "cognito_logout_urls" {
+  description = "List of allowed logout URLs for Cognito"
+  type        = list(string)
+  default     = ["http://localhost:3000", "https://app.webwaka.com"]
+}
