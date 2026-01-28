@@ -199,3 +199,10 @@ This document may only be updated by the Founder or with explicit Founder approv
 ---
 
 **End of Verification Strategy**
+
+
+---
+
+## 7. Documentation
+
+All verification reports must be placed in the `/reports/completion` directory and linked from the `reports/COMPLETION_REPORT_INDEX.md` master index. Refer to `GOVERNANCE.md` for the Coordinator Handover Package for the location of all documents.

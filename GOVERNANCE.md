@@ -267,3 +267,35 @@ If the Founder does not approve, they must:
 ---
 
 **End of Governance**
+
+
+---
+
+## 10. Documentation Structure
+
+To ensure clarity and a single source of truth, this project adheres to a strict, centralized documentation structure. All project members and agents are required to follow this structure.
+
+| Resource | Location | Master Index / Link |
+| :--- | :--- | :--- |
+| **Execution Prompts** | `/docs` | `docs/PHASE_1_PROMPT_LINKS.md` |
+| **Handover Packages** | `/handover` | `handover/HANDOVER_INDEX.md` |
+| **Completion Reports** | `/reports/completion` | `reports/COMPLETION_REPORT_INDEX.md` |
+| **Test Reports** | `/reports/testing` | `reports/TEST_REPORT_INDEX.md` |
+
+All new documents **must** be placed in the correct location and linked from the appropriate master index. The **Coordinator Handover Package** serves as the primary reference for this structure.
+
+
+---
+
+## 6. Documentation Structure
+
+To ensure clarity and a single source of truth, this project adheres to a strict, centralized documentation structure. All project members and agents are required to follow this structure.
+
+| Resource | Location | Master Index / Link |
+| :--- | :--- | :--- |
+| **Execution Prompts** | `/docs` | `docs/PHASE_1_PROMPT_LINKS.md` |
+| **Handover Packages** | `/handover` | `handover/HANDOVER_INDEX.md` |
+| **Completion Reports** | `/reports/completion` | `reports/COMPLETION_REPORT_INDEX.md` |
+| **Test Reports** | `/reports/testing` | `reports/TEST_REPORT_INDEX.md` |
+
+All new documents **must** be placed in the correct location and linked from the appropriate master index. The **Coordinator Handover Package** serves as the primary reference for this structure.

@@ -331,3 +331,10 @@ This document may only be updated by the Founder or with explicit Founder approv
 ---
 
 **End of Execution Phases**
+
+
+---
+
+## Documentation
+
+All documentation related to execution, including prompts and completion reports, must adhere to the centralized documentation structure outlined in `GOVERNANCE.md`. Refer to the master indexes for all links in that document to locate any specific document and in the Coordinator Handover Package for the location of all documents.

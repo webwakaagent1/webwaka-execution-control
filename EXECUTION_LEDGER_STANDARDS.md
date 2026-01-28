@@ -372,3 +372,10 @@ The Independent Verification Manus (IVM) MUST:
 ---
 
 **End of Execution Ledger Standards**
+
+
+---
+
+## 11. Document Locations
+
+All referenced documents (prompts, reports, etc.) must link to the canonical versions in their respective centralized directories as defined in `GOVERNANCE.md`.

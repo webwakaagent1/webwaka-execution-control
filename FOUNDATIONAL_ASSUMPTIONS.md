@@ -241,3 +241,19 @@ This document contains the **15 canonically locked foundational assumptions** th
 ---
 
 **End of Foundational Assumptions**
+
+
+---
+
+## 16. Addendum: Documentation Structure
+
+To uphold Assumption #15 (Single Source of Truth), the project's documentation is organized into a strict, centralized structure. This is not an assumption but a governing principle derived from it.
+
+| Resource | Location | Master Index / Link |
+| :--- | :--- | :--- |
+| **Execution Prompts** | `/docs` | `docs/PHASE_1_PROMPT_LINKS.md` |
+| **Handover Packages** | `/handover` | `handover/HANDOVER_INDEX.md` |
+| **Completion Reports** | `/reports/completion` | `reports/COMPLETION_REPORT_INDEX.md` |
+| **Test Reports** | `/reports/testing` | `reports/TEST_REPORT_INDEX.md` |
+
+Refer to `GOVERNANCE.md` and the **Coordinator Handover Package** for complete details.

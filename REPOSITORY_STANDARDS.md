@@ -193,31 +193,23 @@ Closes #123
 ```
 webwaka-execution-control/
 ├── .github/                 # GitHub Actions workflows
-│   └── workflows/
-│       └── phase-gate.yml   # Phase-gate enforcement workflow
-├── docs/                    # Additional documentation
-│   └── ASSUMPTION_VALIDATION.md  # Assumption validation procedures
-├── reports/                 # STOP-SAFE and verification reports
-│   ├── README.md            # Reports directory documentation
-│   ├── stop-safe-report-*.md      # STOP-SAFE reports
-│   └── phase-*-verification-report-*.md  # Phase verification reports
+├── docs/                    # All execution prompts
+├── handover/                # All handover packages
+├── reports/                 # All completion, verification, and test reports
+│   ├── completion/          # Completion and verification reports
+│   └── testing/             # Test reports
 ├── scripts/                 # Automation scripts
-│   └── validate-assumptions.sh    # Foundational assumptions validator
 ├── FOUNDATIONAL_ASSUMPTIONS.md    # 15 canonically locked assumptions
 ├── GOVERNANCE.md                  # Core governance rules
 ├── EXECUTION_PHASES.md            # Phase definitions with SMART exit criteria
 ├── EXECUTION_LEDGER.md            # Execution history and phase status
-├── EXECUTION_LEDGER_STANDARDS.md  # Ledger structure standards
-├── VERIFICATION_STRATEGY.md       # Verification methods
-├── STOP_SAFE_PROTOCOL.md          # Emergency stop protocol
-├── REPOSITORY_STANDARDS.md        # Repository standards (this document)
-├── PLATFORM_INFRASTRUCTURE.md     # Infrastructure strategy
-├── AWS_BOOTSTRAP_CONFIG.md        # AWS configuration
-├── AWS_IAM_SETUP_GUIDE.md         # IAM setup instructions
-├── PHASE_0_VERIFICATION.md        # Phase 0 verification checklist
-├── PHASE_1_EXECUTION_PROMPT.md    # Phase 1 execution instructions
-├── .gitignore                     # Git ignore file
+├── ... (other core documents)
 └── README.md                      # Repository README
+```
+
+
+```
+
 ```
 
 ### 5.2. Root Directory Structure (for `webwaka-platform`)

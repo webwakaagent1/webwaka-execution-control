@@ -43,15 +43,24 @@ The project is currently at the start of a multi-session execution for the remai
 
 ## 4. Key Information & Locations
 
-| Resource | Location/Details |
-| :--- | :--- |
-| **Primary Code & Docs** | **GitHub:** `github.com/webwakaagent1/webwaka-execution-control` |
-| **Project Knowledge Base** | **Notion:** A dedicated workspace is used for collaboration and documentation. |
-| **Execution Source of Truth** | `EXECUTION_LEDGER.md` (in GitHub root) |
-| **Core Principles** | `FOUNDATIONAL_ASSUMPTIONS.md` (in GitHub root) |
-| **Phase Definitions** | `EXECUTION_PHASES.md` (in GitHub root) |
-| **All Session Prompts** | `docs/` directory in GitHub |
-| **All Completion Reports** | `docs/` directory in GitHub |
+> **This is the single source of truth for document locations. All other documents must and will be updated to reflect this structure.**
+
+| Resource | Location | Master Index / Link |
+| :--- | :--- | :--- |
+| **All Code** | `/` | `https://github.com/webwakaagent1/webwaka-execution-control` |
+| **Core Governance** | `/` | N/A |
+| **Execution Prompts** | `/docs` | `docs/PHASE_1_PROMPT_LINKS.md` |
+| **Handover Packages** | `/handover` | `handover/HANDOVER_INDEX.md` |
+| **Completion Reports** | `/reports/completion` | `reports/COMPLETION_REPORT_INDEX.md` |
+| **Test Reports** | `/reports/testing` | `reports/TEST_REPORT_INDEX.md` |
+| **Project Knowledge Base** | Notion | N/A |
+
+---
+
+
+
+
+
 
 ---
 
