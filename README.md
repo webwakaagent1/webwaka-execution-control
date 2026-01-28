@@ -25,6 +25,18 @@ This repository is the **canonical execution brain** of WebWaka. It contains:
 
 ---
 
+## 📖 Documentation Hub
+
+**New here? Start with the [Documentation Index](DOCUMENTATION_INDEX.md)** — your comprehensive guide to finding any document in this repository.
+
+The Documentation Index provides:
+- Quick-start guides for different roles (Founder, Coordinator, Implementer)
+- Master indexes for all prompts, handovers, and reports
+- Links to core governance documents
+- Explanations of the documentation structure
+
+---
+
 ## Absolute State Persistence Rule
 
 ⚠️ **NOTHING MAY EVER REMAIN LOCAL**
