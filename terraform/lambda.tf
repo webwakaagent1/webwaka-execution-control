@@ -62,10 +62,11 @@ resource "aws_lambda_function" "api" {
     }
   }
 
-  vpc_config {
-    subnet_ids         = aws_subnet.private[*].id
-    security_group_ids = [aws_security_group.app.id]
-  }
+  # VPC configuration temporarily disabled for testing
+  # vpc_config {
+  #   subnet_ids         = aws_subnet.private[*].id
+  #   security_group_ids = [aws_security_group.app.id]
+  # }
 
   tags = {
     Name        = "webwaka-api"
