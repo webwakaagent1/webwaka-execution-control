@@ -43,5 +43,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Export Lambda handler
-module.exports.handler = serverless(app);
+// Export Lambda handler with basePath configuration for API Gateway stage
+module.exports.handler = serverless(app, {
+  basePath: '/prod'
+});
