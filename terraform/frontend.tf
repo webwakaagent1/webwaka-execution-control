@@ -187,7 +187,7 @@ resource "aws_route53_record" "frontend_cert_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.aws_route53_zone.main.zone_id
+  zone_id         = aws_route53_zone.main.zone_id
 }
 
 # ACM Certificate Validation
@@ -199,7 +199,7 @@ resource "aws_acm_certificate_validation" "frontend" {
 
 # Route53 Record for webwaka.site
 resource "aws_route53_record" "frontend" {
-  zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = aws_route53_zone.main.zone_id
   name    = "webwaka.site"
   type    = "A"
 
@@ -212,7 +212,7 @@ resource "aws_route53_record" "frontend" {
 
 # Route53 Record for www.webwaka.site
 resource "aws_route53_record" "frontend_www" {
-  zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = aws_route53_zone.main.zone_id
   name    = "www.webwaka.site"
   type    = "A"
 
@@ -223,11 +223,7 @@ resource "aws_route53_record" "frontend_www" {
   }
 }
 
-# Data source for Route53 hosted zone
-data "aws_route53_zone" "main" {
-  name         = "webwaka.site"
-  private_zone = false
-}
+
 
 # Outputs
 output "frontend_bucket_name" {
