@@ -299,3 +299,16 @@ To ensure clarity and a single source of truth, this project adheres to a strict
 | **Test Reports** | `/reports/testing` | `reports/TEST_REPORT_INDEX.md` |
 
 All new documents **must** be placed in the correct location and linked from the appropriate master index. The **Coordinator Handover Package** serves as the primary reference for this structure.
+
+
+---
+
+## 7. MANDATORY: Documentation Structure Enforcement
+
+Compliance with the centralized documentation structure is **mandatory for all agents**. This is a non-negotiable rule.
+
+**All agents MUST place new documents in the correct locations and update the master index files as defined in the [Documentation Index](DOCUMENTATION_INDEX.md).**
+
+Failure to comply will result in a **STOP condition** and will be treated as a critical execution failure. The Coordinator Agent is responsible for verifying compliance as part of every task verification.
+
+Refer to the `DOCUMENTATION_STRUCTURE_ENFORCEMENT.md` for the full directive details.
