@@ -9,3 +9,6 @@ event-processor/node_modules/
 ws-connect/
 ws-disconnect/
 ws-default/
+
+# Backend node_modules
+backend/node_modules/
