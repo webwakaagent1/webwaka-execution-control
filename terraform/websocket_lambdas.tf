@@ -127,7 +127,7 @@ resource "aws_apigatewayv2_route" "disconnect" {
   target    = "integrations/${aws_apigatewayv2_integration.disconnect.id}"
 }
 
-resource "aws_apigatewayv2_route" "default" {
+resource "aws_apigatewayv2_route" "websocket_default" {
   api_id    = aws_apigatewayv2_api.websocket.id
   route_key = "$default"
   target    = "integrations/${aws_apigatewayv2_integration.default.id}"
