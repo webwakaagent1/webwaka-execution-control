@@ -1,22 +1,40 @@
 const express = require('express');
 const serverless = require('serverless-http');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
-const { S3Client } = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const { PutObjectCommand } = require('@aws-sdk/client-s3');
 const { EventBridgeClient, PutEventsCommand } = require('@aws-sdk/client-eventbridge');
-
-// Initialize AWS SDK clients
-const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
-const snsClient = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
-const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
-const eventBridgeClient = new EventBridgeClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
 const app = express();
 
+// AWS Clients
+const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const snsClient = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const eventBridgeClient = new EventBridgeClient({ region: process.env.AWS_REGION || 'us-east-1' });
+
+// Environment variables
+const UPLOAD_BUCKET = process.env.UPLOAD_BUCKET || 'webwaka-uploads-production';
+const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN || 'arn:aws:sns:us-east-1:123456789012:webwaka-notifications-production';
+const EVENT_BUS_NAME = process.env.EVENT_BUS_NAME || 'webwaka-event-bus-production';
+const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL || 'noreply@webwaka.site';
+
 // Middleware
 app.use(express.json());
+
+// CORS Middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // Routes
 app.get('/', (req, res) => {
@@ -46,45 +64,80 @@ app.get('/api/info', (req, res) => {
   });
 });
 
-// Send Email Endpoint
+// File Upload Endpoint (Session 8)
+app.post('/upload-url', async (req, res) => {
+  try {
+    const { fileName, fileType } = req.body;
+    
+    if (!fileName || !fileType) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'fileName and fileType are required'
+      });
+    }
+    
+    // Generate unique file name
+    const timestamp = Date.now();
+    const uniqueFileName = `${timestamp}-${fileName}`;
+    
+    // Create presigned URL for upload
+    const command = new PutObjectCommand({
+      Bucket: UPLOAD_BUCKET,
+      Key: uniqueFileName,
+      ContentType: fileType
+    });
+    
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    const fileUrl = `https://${UPLOAD_BUCKET}.s3.amazonaws.com/${uniqueFileName}`;
+    
+    res.json({
+      uploadUrl,
+      fileUrl,
+      fileName: uniqueFileName
+    });
+  } catch (error) {
+    console.error('Error generating presigned URL:', error);
+    res.status(500).json({
+      error: 'Failed to generate upload URL',
+      message: error.message
+    });
+  }
+});
+
+// Send Email Endpoint (Session 7)
 app.post('/send-email', async (req, res) => {
   try {
     const { to, subject, body } = req.body;
-
+    
     if (!to || !subject || !body) {
       return res.status(400).json({
         error: 'Missing required fields',
-        required: ['to', 'subject', 'body']
+        message: 'to, subject, and body are required'
       });
     }
-
-    const params = {
-      Source: 'noreply@webwaka.site',
+    
+    const command = new SendEmailCommand({
+      Source: SES_FROM_EMAIL,
       Destination: {
         ToAddresses: [to]
       },
       Message: {
         Subject: {
-          Data: subject,
-          Charset: 'UTF-8'
+          Data: subject
         },
         Body: {
           Text: {
-            Data: body,
-            Charset: 'UTF-8'
+            Data: body
           }
         }
       }
-    };
-
-    const command = new SendEmailCommand(params);
+    });
+    
     const result = await sesClient.send(command);
-
+    
     res.json({
       success: true,
-      message: 'Email sent successfully',
-      messageId: result.MessageId,
-      timestamp: new Date().toISOString()
+      messageId: result.MessageId
     });
   } catch (error) {
     console.error('Error sending email:', error);
@@ -95,172 +148,72 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// Generate Upload URL Endpoint
-app.post('/generate-upload-url', async (req, res) => {
-  try {
-    const { filename, contentType } = req.body;
-
-    if (!filename || !contentType) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-        required: ['filename', 'contentType']
-      });
-    }
-
-    // Generate a unique key for the file
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(7);
-    const key = `uploads/${timestamp}-${randomString}-${filename}`;
-
-    // Create the S3 PutObject command
-    const command = new PutObjectCommand({
-      Bucket: process.env.UPLOADS_BUCKET_NAME,
-      Key: key,
-      ContentType: contentType
-    });
-
-    // Generate presigned URL (valid for 5 minutes)
-    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
-
-    res.json({
-      success: true,
-      uploadUrl: uploadUrl,
-      key: key,
-      expiresIn: 300,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error generating upload URL:', error);
-    res.status(500).json({
-      error: 'Failed to generate upload URL',
-      message: error.message
-    });
-  }
-});
-
-// Send Notification Endpoint
+// Send Notification Endpoint (Session 7)
 app.post('/send-notification', async (req, res) => {
   try {
-    const { message, subject } = req.body;
-
+    const { message } = req.body;
+    
     if (!message) {
       return res.status(400).json({
-        error: 'Missing required field: message'
+        error: 'Missing required field',
+        message: 'message is required'
       });
     }
-
-    const params = {
-      TopicArn: process.env.SNS_TOPIC_ARN,
+    
+    const command = new PublishCommand({
+      TopicArn: SNS_TOPIC_ARN,
       Message: message,
-      Subject: subject || 'WebWaka Notification'
-    };
-
-    const command = new PublishCommand(params);
+      Subject: 'WebWaka Notification'
+    });
+    
     const result = await snsClient.send(command);
-
+    
     res.json({
       success: true,
-      message: 'Notification published successfully',
-      messageId: result.MessageId,
-      timestamp: new Date().toISOString()
+      messageId: result.MessageId
     });
   } catch (error) {
-    console.error('Error publishing notification:', error);
+    console.error('Error sending notification:', error);
     res.status(500).json({
-      error: 'Failed to publish notification',
+      error: 'Failed to send notification',
       message: error.message
     });
   }
 });
 
-// Publish Event Endpoint
+// Publish Event Endpoint (Session 9)
 app.post('/publish-event', async (req, res) => {
   try {
     const { eventType, data } = req.body;
-
-    if (!eventType) {
+    
+    if (!eventType || !data) {
       return res.status(400).json({
-        error: 'Missing required field: eventType'
+        error: 'Missing required fields',
+        message: 'eventType and data are required'
       });
     }
-
-    const event = {
-      Source: 'com.webwaka.api',
-      DetailType: eventType,
-      Detail: JSON.stringify(data || {}),
-      EventBusName: process.env.EVENT_BUS_NAME,
-      Time: new Date()
-    };
-
+    
     const command = new PutEventsCommand({
-      Entries: [event]
+      Entries: [
+        {
+          Source: 'webwaka.api',
+          DetailType: eventType,
+          Detail: JSON.stringify(data),
+          EventBusName: EVENT_BUS_NAME
+        }
+      ]
     });
-
+    
     const result = await eventBridgeClient.send(command);
-
-    if (result.FailedEntryCount > 0) {
-      throw new Error(`Failed to publish event: ${JSON.stringify(result.Entries[0].ErrorMessage)}`);
-    }
-
+    
     res.json({
       success: true,
-      message: 'Event published successfully',
-      eventId: result.Entries[0].EventId,
-      timestamp: new Date().toISOString()
+      eventId: result.Entries[0].EventId
     });
   } catch (error) {
     console.error('Error publishing event:', error);
     res.status(500).json({
       error: 'Failed to publish event',
-      message: error.message
-    });
-  }
-});
-
-// Generate Text (AI) Endpoint
-app.post('/generate-text', async (req, res) => {
-  try {
-    const { prompt, connectionId } = req.body;
-
-    if (!prompt) {
-      return res.status(400).json({
-        error: 'Missing required field: prompt'
-      });
-    }
-
-    // Publish AI request event to EventBridge
-    const event = {
-      Source: 'com.webwaka.api',
-      DetailType: 'ai.text.generation.requested',
-      Detail: JSON.stringify({
-        prompt: prompt,
-        connectionId: connectionId || null,
-        requestedAt: new Date().toISOString()
-      }),
-      EventBusName: process.env.EVENT_BUS_NAME,
-      Time: new Date()
-    };
-
-    const command = new PutEventsCommand({
-      Entries: [event]
-    });
-
-    const result = await eventBridgeClient.send(command);
-
-    if (result.FailedEntryCount > 0) {
-      throw new Error(`Failed to publish AI request: ${JSON.stringify(result.Entries[0].ErrorMessage)}`);
-    }
-
-    res.json({
-      success: true,
-      message: 'AI text generation request submitted',
-      eventId: result.Entries[0].EventId,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error submitting AI request:', error);
-    res.status(500).json({
-      error: 'Failed to submit AI request',
       message: error.message
     });
   }

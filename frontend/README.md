@@ -1,73 +1,113 @@
-# React + TypeScript + Vite
+# WebWaka Frontend - Authentication UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the authentication UI components for the WebWaka platform, integrating with AWS Cognito for user management.
 
-Currently, two official plugins are available:
+## Components
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### AuthContainer
+Main container component that manages the authentication flow and switches between login and registration views.
 
-## React Compiler
+### Login
+User login form with email and password fields. Integrates with AWS Cognito for authentication.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Register
+User registration form with email verification. Creates new users in the Cognito User Pool.
 
-## Expanding the ESLint configuration
+## Configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Before using these components, you need to configure the Cognito User Pool details:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Open `src/config/cognito.ts`
+2. Replace the placeholder values with your actual Cognito User Pool ID and Client ID from Session 4
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```typescript
+const poolData = {
+  UserPoolId: 'us-east-1_XXXXXXXXX', // Replace with actual User Pool ID
+  ClientId: 'XXXXXXXXXXXXXXXXXXXXXXXXXX', // Replace with actual Client ID
+};
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Alternatively, set environment variables:
+- `VITE_COGNITO_USER_POOL_ID`
+- `VITE_COGNITO_CLIENT_ID`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Installation
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Install the required dependencies:
+
+```bash
+npm install amazon-cognito-identity-js
 ```
+
+## Usage
+
+```typescript
+import { AuthContainer } from './components/auth/AuthContainer';
+
+function App() {
+  const handleAuthSuccess = (user) => {
+    console.log('User logged in:', user);
+    // Handle successful authentication
+  };
+
+  return <AuthContainer onAuthSuccess={handleAuthSuccess} />;
+}
+```
+
+## Features
+
+- ✅ User registration with email verification
+- ✅ User login with email and password
+- ✅ Password validation (minimum 8 characters)
+- ✅ Error handling and user feedback
+- ✅ Loading states during API calls
+- ✅ Responsive design for mobile and desktop
+- ✅ JWT token management
+- ✅ Session persistence
+
+## Testing
+
+To test the authentication flow:
+
+1. **Registration:**
+   - Fill in the registration form
+   - Check your email for the verification code
+   - Enter the code to verify your account
+
+2. **Login:**
+   - Use your registered email and password
+   - Upon successful login, you'll receive JWT tokens
+
+## API Integration
+
+The authentication components provide JWT tokens that can be used to authenticate API requests:
+
+```typescript
+import { getIdToken, getAccessToken } from './config/cognito';
+
+// Get ID token for API authentication
+const idToken = await getIdToken();
+
+// Make authenticated API request
+const response = await fetch('https://api.webwaka.site/endpoint', {
+  headers: {
+    'Authorization': `Bearer ${idToken}`
+  }
+});
+```
+
+## Deployment
+
+These components are designed to work with the existing Vite/React frontend. To deploy:
+
+1. Ensure the Cognito configuration is correct
+2. Build the frontend: `npm run build`
+3. Deploy to S3 as configured in Session 6
+
+## Next Steps
+
+- Implement password reset functionality
+- Add social login (Google, Facebook)
+- Implement multi-factor authentication (MFA)
+- Add user profile management
+- Implement session timeout handling
