@@ -1,2 +1,11 @@
 terraform/terraform.tfvars
 terraform/*.tfvars
+
+# Lambda function node_modules
+bedrock-processor/node_modules/
+result-pusher/node_modules/
+websocket-handlers/node_modules/
+event-processor/node_modules/
+ws-connect/
+ws-disconnect/
+ws-default/
