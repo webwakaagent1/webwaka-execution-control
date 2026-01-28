@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import { getCachedData, setCachedData } from './db'
 
 interface ApiResponse {
   message: string
@@ -24,9 +25,68 @@ function App() {
   const [uploading, setUploading] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [showInstallButton, setShowInstallButton] = useState(false)
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  // Handle PWA install prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setShowInstallButton(true)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    }
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      return
+    }
+
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt')
+    }
+
+    setDeferredPrompt(null)
+    setShowInstallButton(false)
+  }
 
   useEffect(() => {
     const fetchData = async () => {
+      const cacheKey = 'api-root'
+      
+      // Try to load from IndexedDB first
+      const cachedData = await getCachedData(cacheKey)
+      if (cachedData) {
+        console.log('Loading from IndexedDB cache')
+        setApiData(cachedData)
+        setLoading(false)
+      }
+
+      // Then fetch fresh data from network
       try {
         const response = await fetch('https://qtoh7sgol1.execute-api.us-east-1.amazonaws.com/prod')
         if (!response.ok) {
@@ -34,8 +94,14 @@ function App() {
         }
         const data = await response.json()
         setApiData(data)
+        
+        // Cache the fresh data in IndexedDB
+        await setCachedData(cacheKey, data)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch data')
+        // If we have cached data, don't show error
+        if (!cachedData) {
+          setError(err instanceof Error ? err.message : 'Failed to fetch data')
+        }
       } finally {
         setLoading(false)
       }
@@ -112,6 +178,17 @@ function App() {
         <h1>WebWaka Platform</h1>
         <p>Frontend Placeholder Application</p>
         
+        <div className="status-bar">
+          <span className={`status-indicator ${isOnline ? 'online' : 'offline'}`}>
+            {isOnline ? '🟢 Online' : '🔴 Offline'}
+          </span>
+          {showInstallButton && (
+            <button onClick={handleInstallClick} className="install-button">
+              📱 Install App
+            </button>
+          )}
+        </div>
+        
         <div className="api-response">
           <h2>Backend API Response:</h2>
           {loading && <p>Loading...</p>}
@@ -133,11 +210,11 @@ function App() {
               id="file-input"
               type="file"
               onChange={handleFileSelect}
-              disabled={uploading}
+              disabled={uploading || !isOnline}
             />
             <button
               onClick={handleUpload}
-              disabled={!selectedFile || uploading}
+              disabled={!selectedFile || uploading || !isOnline}
               className="upload-button"
             >
               {uploading ? 'Uploading...' : 'Upload File'}
@@ -150,6 +227,7 @@ function App() {
           )}
           {uploadSuccess && <p className="success">{uploadSuccess}</p>}
           {uploadError && <p className="error">Error: {uploadError}</p>}
+          {!isOnline && <p className="warning">⚠️ File upload requires internet connection</p>}
         </div>
       </header>
     </div>
