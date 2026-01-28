@@ -1,0 +1,107 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: pnpm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Get S3 bucket name from Terraform outputs
+        id: terraform-outputs
+        working-directory: ./terraform
+        run: |
+          # Initialize Terraform
+          terraform init
+          
+          # Get the bucket name from outputs
+          BUCKET_NAME=$(terraform output -raw frontend_bucket_name 2>/dev/null || echo "")
+          
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "Error: Could not get frontend bucket name from Terraform outputs"
+            exit 1
+          fi
+          
+          echo "bucket_name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+          echo "Bucket name: $BUCKET_NAME"
+
+      - name: Sync files to S3
+        working-directory: ./frontend
+        run: |
+          aws s3 sync dist/ s3://${{ steps.terraform-outputs.outputs.bucket_name }}/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html"
+          
+          # Upload index.html separately with no-cache
+          aws s3 cp dist/index.html s3://${{ steps.terraform-outputs.outputs.bucket_name }}/index.html \
+            --cache-control "public, max-age=0, must-revalidate"
+
+      - name: Get CloudFront distribution ID
+        id: cloudfront-id
+        working-directory: ./terraform
+        run: |
+          DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
+          
+          if [ -z "$DISTRIBUTION_ID" ]; then
+            echo "Error: Could not get CloudFront distribution ID from Terraform outputs"
+            exit 1
+          fi
+          
+          echo "distribution_id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
+          echo "Distribution ID: $DISTRIBUTION_ID"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.cloudfront-id.outputs.distribution_id }} \
+            --paths "/*"
+
+      - name: Deployment summary
+        run: |
+          echo "✅ Frontend deployed successfully!"
+          echo "📦 S3 Bucket: ${{ steps.terraform-outputs.outputs.bucket_name }}"
+          echo "🌐 CloudFront Distribution: ${{ steps.cloudfront-id.outputs.distribution_id }}"
+          echo "🔗 Website URL: https://webwaka.site"

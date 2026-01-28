@@ -1,0 +1,63 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.App {
+  width: 100%;
+}
+
+.App-header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+.api-response {
+  margin-top: 2rem;
+  padding: 2rem;
+  border: 2px solid #646cff;
+  border-radius: 8px;
+  background-color: rgba(100, 108, 255, 0.1);
+  max-width: 600px;
+}
+
+.api-response h2 {
+  font-size: 1.5em;
+  margin-bottom: 1rem;
+}
+
+.response-data {
+  text-align: left;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.response-data p {
+  margin: 0.5rem 0;
+  font-size: 0.9em;
+}
+
+.error {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+@media (prefers-color-scheme: light) {
+  .api-response {
+    border-color: #535bf2;
+    background-color: rgba(83, 91, 242, 0.1);
+  }
+}
