@@ -131,3 +131,23 @@ Your workflow for issuing a prompt is now:
 This ensures the Implementation Agent always works from the canonical version of the prompt stored in the version-controlled repository.
 
 **Reference:** For full details, see the `PROMPT_DELIVERY_PROTOCOL.md` document and `PHASE_1_PROMPT_LINKS.md` for a quick reference of all Phase 1 prompt links.
+
+
+---
+
+## 9. UPDATE: Centralized Reporting System
+
+To further streamline documentation, all completion, verification, and test reports have been centralized into a new `/reports` directory with master index files.
+
+**The New System:**
+
+-   **Completion/Verification Reports:** All are now located in `/reports/completion` and indexed in `reports/COMPLETION_REPORT_INDEX.md`.
+-   **Test Reports:** All will be located in `/reports/testing` and indexed in `reports/TEST_REPORT_INDEX.md`.
+
+When you create or receive a report, your workflow is:
+
+1.  **Place the Report:** Add the new report file to the correct subdirectory in `/reports`.
+2.  **Update the Index:** Add a new row to the corresponding master index file with a link to the new report.
+3.  **Deliver Index Link:** When notifying stakeholders, send a link to the master index, not the individual report.
+
+**Reference:** For full details, see the `reports/REPORT_DELIVERY_PROTOCOL.md` document.
