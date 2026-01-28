@@ -56,7 +56,7 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = {
       NODE_ENV    = var.environment
-      DB_HOST     = aws_rds_cluster.main.endpoint
+      DB_HOST     = aws_rds_cluster.postgresql.endpoint
       DB_NAME     = var.db_name
       DB_USER     = var.db_username
       AWS_REGION  = var.aws_region
