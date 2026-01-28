@@ -2,7 +2,27 @@
 # This configuration uses S3 static website hosting directly
 # CloudFront will be added once AWS account is verified
 
-# S3 Bucket for Frontend (already exists, just configure website hosting)
+# S3 Bucket for Frontend
+resource "aws_s3_bucket" "frontend" {
+  bucket = "webwaka-frontend-${var.environment}"
+
+  tags = {
+    Name        = "WebWaka Frontend"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
+
+# S3 Bucket Versioning
+resource "aws_s3_bucket_versioning" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# S3 Bucket for Frontend Website Configuration
 resource "aws_s3_bucket_website_configuration" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
