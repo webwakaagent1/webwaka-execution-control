@@ -40,11 +40,12 @@ resource "aws_apigatewayv2_stage" "websocket" {
   name        = var.environment
   auto_deploy = true
 
-  default_route_settings {
-    logging_level            = "INFO"
-    data_trace_enabled       = true
-    detailed_metrics_enabled = true
-  }
+  # Logging disabled - requires CloudWatch Logs role ARN in account settings
+  # default_route_settings {
+  #   logging_level            = "INFO"
+  #   data_trace_enabled       = true
+  #   detailed_metrics_enabled = true
+  # }
 
   tags = {
     Name        = "WebWaka WebSocket Stage"

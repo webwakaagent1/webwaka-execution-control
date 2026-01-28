@@ -12,7 +12,6 @@ resource "aws_lambda_function" "bedrock_processor" {
   environment {
     variables = {
       EVENT_BUS_NAME = aws_cloudwatch_event_bus.webwaka.name
-      AWS_REGION     = var.aws_region
     }
   }
 
@@ -186,7 +185,6 @@ resource "aws_lambda_function" "result_pusher" {
     variables = {
       CONNECTIONS_TABLE  = aws_dynamodb_table.websocket_connections.name
       WEBSOCKET_ENDPOINT = "${replace(aws_apigatewayv2_api.websocket.api_endpoint, "wss://", "https://")}/${aws_apigatewayv2_stage.websocket.name}"
-      AWS_REGION         = var.aws_region
     }
   }
 

@@ -11,7 +11,6 @@ resource "aws_lambda_function" "websocket_connect" {
   environment {
     variables = {
       CONNECTIONS_TABLE = aws_dynamodb_table.websocket_connections.name
-      AWS_REGION        = var.aws_region
     }
   }
 
@@ -35,7 +34,6 @@ resource "aws_lambda_function" "websocket_disconnect" {
   environment {
     variables = {
       CONNECTIONS_TABLE = aws_dynamodb_table.websocket_connections.name
-      AWS_REGION        = var.aws_region
     }
   }
 
@@ -59,7 +57,6 @@ resource "aws_lambda_function" "websocket_default" {
   environment {
     variables = {
       CONNECTIONS_TABLE = aws_dynamodb_table.websocket_connections.name
-      AWS_REGION        = var.aws_region
     }
   }
 
