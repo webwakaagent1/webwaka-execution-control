@@ -92,7 +92,7 @@ resource "aws_iam_policy" "lambda_ses_sns" {
 
 # Attach SES/SNS policy to Lambda execution role
 resource "aws_iam_role_policy_attachment" "lambda_ses_sns" {
-  role       = aws_iam_role.lambda_execution.name
+  role       = aws_iam_role.lambda_exec.name
   policy_arn = aws_iam_policy.lambda_ses_sns.arn
 }
 
