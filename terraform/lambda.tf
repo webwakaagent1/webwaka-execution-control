@@ -39,7 +39,7 @@ data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../backend"
   output_path = "${path.module}/../backend.zip"
-  excludes    = ["node_modules", ".git", ".gitignore"]
+  excludes    = [".git", ".gitignore"]
 }
 
 # Lambda Function
