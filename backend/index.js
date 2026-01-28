@@ -2,10 +2,14 @@ const express = require('express');
 const serverless = require('serverless-http');
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
+const { S3Client } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const { PutObjectCommand } = require('@aws-sdk/client-s3');
 
 // Initialize AWS SDK clients
 const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const snsClient = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
 const app = express();
 
@@ -84,6 +88,49 @@ app.post('/send-email', async (req, res) => {
     console.error('Error sending email:', error);
     res.status(500).json({
       error: 'Failed to send email',
+      message: error.message
+    });
+  }
+});
+
+// Generate Upload URL Endpoint
+app.post('/generate-upload-url', async (req, res) => {
+  try {
+    const { filename, contentType } = req.body;
+
+    if (!filename || !contentType) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        required: ['filename', 'contentType']
+      });
+    }
+
+    // Generate a unique key for the file
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(7);
+    const key = `uploads/${timestamp}-${randomString}-${filename}`;
+
+    // Create the S3 PutObject command
+    const command = new PutObjectCommand({
+      Bucket: process.env.UPLOADS_BUCKET_NAME,
+      Key: key,
+      ContentType: contentType
+    });
+
+    // Generate presigned URL (valid for 5 minutes)
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
+
+    res.json({
+      success: true,
+      uploadUrl: uploadUrl,
+      key: key,
+      expiresIn: 300,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error generating upload URL:', error);
+    res.status(500).json({
+      error: 'Failed to generate upload URL',
       message: error.message
     });
   }
