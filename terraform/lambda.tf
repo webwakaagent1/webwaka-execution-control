@@ -34,21 +34,14 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc" {
   role       = aws_iam_role.lambda_exec.name
 }
 
-# Create deployment package
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/../backend"
-  output_path = "${path.module}/../backend.zip"
-  excludes    = [".git", ".gitignore"]
-}
-
 # Lambda Function
+# Note: backend.zip must be pre-built with: cd backend && zip -r ../backend.zip . -x ".git/*" ".gitignore"
 resource "aws_lambda_function" "api" {
-  filename         = data.archive_file.lambda_zip.output_path
+  filename         = "${path.module}/../backend.zip"
   function_name    = "webwaka-api"
   role            = aws_iam_role.lambda_exec.arn
   handler         = "index.handler"
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  source_code_hash = filebase64sha256("${path.module}/../backend.zip")
   runtime         = "nodejs20.x"
   timeout         = 30
   memory_size     = 512
