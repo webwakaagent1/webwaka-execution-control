@@ -5,11 +5,13 @@ const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
 const { S3Client } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
+const { EventBridgeClient, PutEventsCommand } = require('@aws-sdk/client-eventbridge');
 
 // Initialize AWS SDK clients
 const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const snsClient = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+const eventBridgeClient = new EventBridgeClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
 const app = express();
 
@@ -166,6 +168,50 @@ app.post('/send-notification', async (req, res) => {
     console.error('Error publishing notification:', error);
     res.status(500).json({
       error: 'Failed to publish notification',
+      message: error.message
+    });
+  }
+});
+
+// Publish Event Endpoint
+app.post('/publish-event', async (req, res) => {
+  try {
+    const { eventType, data } = req.body;
+
+    if (!eventType) {
+      return res.status(400).json({
+        error: 'Missing required field: eventType'
+      });
+    }
+
+    const event = {
+      Source: 'com.webwaka.api',
+      DetailType: eventType,
+      Detail: JSON.stringify(data || {}),
+      EventBusName: process.env.EVENT_BUS_NAME,
+      Time: new Date()
+    };
+
+    const command = new PutEventsCommand({
+      Entries: [event]
+    });
+
+    const result = await eventBridgeClient.send(command);
+
+    if (result.FailedEntryCount > 0) {
+      throw new Error(`Failed to publish event: ${JSON.stringify(result.Entries[0].ErrorMessage)}`);
+    }
+
+    res.json({
+      success: true,
+      message: 'Event published successfully',
+      eventId: result.Entries[0].EventId,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error publishing event:', error);
+    res.status(500).json({
+      error: 'Failed to publish event',
       message: error.message
     });
   }

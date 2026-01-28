@@ -48,12 +48,13 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      NODE_ENV           = var.environment
-      DB_HOST            = aws_rds_cluster.postgresql.endpoint
-      DB_NAME            = var.database_name
-      DB_USER            = var.database_master_username
-      SNS_TOPIC_ARN      = aws_sns_topic.webwaka_notifications.arn
+      NODE_ENV            = var.environment
+      DB_HOST             = aws_rds_cluster.postgresql.endpoint
+      DB_NAME             = var.database_name
+      DB_USER             = var.database_master_username
+      SNS_TOPIC_ARN       = aws_sns_topic.webwaka_notifications.arn
       UPLOADS_BUCKET_NAME = aws_s3_bucket.uploads.id
+      EVENT_BUS_NAME      = aws_cloudwatch_event_bus.webwaka.name
     }
   }
 
