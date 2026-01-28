@@ -154,38 +154,24 @@ output "cognito_identity_pool_id" {
   value       = aws_cognito_identity_pool.main.id
 }
 
-# ECS/Fargate outputs
-output "ecs_cluster_id" {
-  description = "ID of the ECS cluster"
-  value       = aws_ecs_cluster.main.id
+# API Gateway Outputs
+output "api_gateway_endpoint" {
+  description = "API Gateway endpoint URL"
+  value       = aws_apigatewayv2_stage.prod.invoke_url
 }
 
-output "ecs_cluster_name" {
-  description = "Name of the ECS cluster"
-  value       = aws_ecs_cluster.main.name
+output "api_gateway_id" {
+  description = "API Gateway ID"
+  value       = aws_apigatewayv2_api.main.id
 }
 
-output "alb_dns_name" {
-  description = "DNS name of the Application Load Balancer"
-  value       = aws_lb.main.dns_name
+# Lambda Outputs
+output "lambda_function_name" {
+  description = "Lambda function name"
+  value       = aws_lambda_function.api.function_name
 }
 
-output "alb_arn" {
-  description = "ARN of the Application Load Balancer"
-  value       = aws_lb.main.arn
-}
-
-output "alb_zone_id" {
-  description = "Zone ID of the Application Load Balancer"
-  value       = aws_lb.main.zone_id
-}
-
-output "ecr_repository_url" {
-  description = "URL of the ECR repository for API images"
-  value       = aws_ecr_repository.api.repository_url
-}
-
-output "ecs_service_name" {
-  description = "Name of the ECS service"
-  value       = aws_ecs_service.api.name
+output "lambda_function_arn" {
+  description = "Lambda function ARN"
+  value       = aws_lambda_function.api.arn
 }
