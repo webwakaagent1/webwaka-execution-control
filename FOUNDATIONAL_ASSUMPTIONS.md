@@ -1,9 +1,9 @@
-# Foundational Assumptions
+# Foundational Assumptions (Canonically Corrected)
 
 **Status:** 🔒 CANONICALLY LOCKED  
 **Authority:** Founder  
 **Source:** WebWaka Platform Re-Founding Blueprint v5.0, Section 1  
-**Last Updated:** 2026-01-26 (Phase 0 Remediation)
+**Last Updated:** 2026-01-28 (Canonical Correction Pass)
 
 ---
 
@@ -59,11 +59,11 @@ This document contains the **15 canonically locked foundational assumptions** th
 
 ---
 
-### Assumption #3: Platform-for-Platforms Vision
+### Assumption #3: Platform-for-Platforms Vision (WebWaka Builds, Partners Deploy)
 
-**Statement:** WebWaka is not a vertical SaaS. It is a meta-platform that enables partners to build, brand, and resell their own SaaS businesses.
+**Statement:** WebWaka is not a vertical SaaS. It is a meta-platform that enables partners to deploy and sell their own SaaS businesses. **WebWaka builds everything centrally.** Partners do NOT build, develop, or author features.
 
-**Rationale:** WebWaka's business model is partner-led scale. Partners are the primary customers, not end users.
+**Rationale:** WebWaka's business model is partner-led scale. Partners are the primary customers, not end users. WebWaka builds canonical suites, modules, and capabilities, which partners then deploy, configure, brand, price, and sell.
 
 ---
 
@@ -118,12 +118,12 @@ This document contains the **15 canonically locked foundational assumptions** th
 
 **Statement:** Any system WebWaka uses internally must be available for partners and clients to use for their own platforms.
 
-**Rationale:** WebWaka is a Platform for Building Platforms. Partners must be able to use the same systems WebWaka uses to build their own platforms for their clients.
+**Rationale:** WebWaka is a Platform for Building Platforms. Partners must be able to deploy the same systems WebWaka uses to their own clients.
 
 **Examples:**
-- If WebWaka uses CRM internally, partners can use CRM for their clients
-- If WebWaka uses AI orchestration internally, partners can use AI for their clients
-- If WebWaka uses affiliate tracking internally, partners can use affiliate tracking for their clients
+- If WebWaka uses CRM internally, partners can deploy CRM for their clients
+- If WebWaka uses AI orchestration internally, partners can deploy AI for their clients
+- If WebWaka uses affiliate tracking internally, partners can deploy affiliate tracking for their clients
 
 ---
 
@@ -215,7 +215,7 @@ This document contains the **15 canonically locked foundational assumptions** th
 
 ### Assumption #15: Platform Extensibility & Future-Proofing
 
-**Statement:** Every system, module, service, UI, workflow, AI capability, and integration built today MUST be designed such that unknown future capabilities can be added later as plug-ins, without breaking, refactoring, or rewriting existing systems.
+**Statement:** Every system, module, service, UI, workflow, AI capability, and integration built today MUST be designed such that unknown future capabilities can be added later as plug-ins, without breaking, refactoring, or rewriting existing systems. **WebWaka builds all extensions; partners do not build plugins.**
 
 **Rationale:** WebWaka is designed to evolve for 10–20 years. The platform must be extensible, composable, and future-proof.
 
