@@ -1,0 +1,16 @@
+{
+  "name": "bedrock-processor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.975.0",
+    "@aws-sdk/client-eventbridge": "^3.975.0"
+  }
+}

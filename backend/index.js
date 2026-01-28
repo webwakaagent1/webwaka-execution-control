@@ -217,6 +217,55 @@ app.post('/publish-event', async (req, res) => {
   }
 });
 
+// Generate Text (AI) Endpoint
+app.post('/generate-text', async (req, res) => {
+  try {
+    const { prompt, connectionId } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({
+        error: 'Missing required field: prompt'
+      });
+    }
+
+    // Publish AI request event to EventBridge
+    const event = {
+      Source: 'com.webwaka.api',
+      DetailType: 'ai.text.generation.requested',
+      Detail: JSON.stringify({
+        prompt: prompt,
+        connectionId: connectionId || null,
+        requestedAt: new Date().toISOString()
+      }),
+      EventBusName: process.env.EVENT_BUS_NAME,
+      Time: new Date()
+    };
+
+    const command = new PutEventsCommand({
+      Entries: [event]
+    });
+
+    const result = await eventBridgeClient.send(command);
+
+    if (result.FailedEntryCount > 0) {
+      throw new Error(`Failed to publish AI request: ${JSON.stringify(result.Entries[0].ErrorMessage)}`);
+    }
+
+    res.json({
+      success: true,
+      message: 'AI text generation request submitted',
+      eventId: result.Entries[0].EventId,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error submitting AI request:', error);
+    res.status(500).json({
+      error: 'Failed to submit AI request',
+      message: error.message
+    });
+  }
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
