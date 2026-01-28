@@ -112,3 +112,22 @@ Your job follows a clear, cyclical pattern:
 - [ ] I am ready to issue the `REVISED_PHASE_1_SESSION_5_PROMPT.md` and coordinate the remainder of Phase 1.
 
 **You are now the Coordinator. Good luck.**
+
+
+---
+
+## 8. UPDATE: Streamlined Prompt Delivery Protocol
+
+To improve efficiency and maintain a single source of truth, the process for delivering prompts to the Implementation Agent has been updated.
+
+**The New Protocol:** Instead of sending the full text of a prompt, the Coordinator will now send a direct GitHub link to the prompt file.
+
+Your workflow for issuing a prompt is now:
+
+1.  **Prepare and Commit:** Create the prompt and commit it to the `docs/` directory in GitHub.
+2.  **Generate Link:** Obtain the direct file link from the GitHub repository.
+3.  **Deliver Link:** Send a concise message to the Implementation Agent containing only the link and a brief authorization statement.
+
+This ensures the Implementation Agent always works from the canonical version of the prompt stored in the version-controlled repository.
+
+**Reference:** For full details, see the `PROMPT_DELIVERY_PROTOCOL.md` document and `PHASE_1_PROMPT_LINKS.md` for a quick reference of all Phase 1 prompt links.
