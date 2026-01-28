@@ -3,8 +3,8 @@ import { CognitoUserPool } from 'amazon-cognito-identity-js';
 // These values should be replaced with actual Cognito User Pool details from Session 4
 // For now, using placeholder values that need to be configured
 const poolData = {
-  UserPoolId: process.env.VITE_COGNITO_USER_POOL_ID || 'us-east-1_XXXXXXXXX',
-  ClientId: process.env.VITE_COGNITO_CLIENT_ID || 'XXXXXXXXXXXXXXXXXXXXXXXXXX',
+  UserPoolId: 'us-east-1_L01M7ihCj',
+  ClientId: '76ba00n00q602m2vnedh6c21mp',
 };
 
 export const userPool = new CognitoUserPool(poolData);
