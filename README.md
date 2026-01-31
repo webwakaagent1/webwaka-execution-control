@@ -1,3 +1,41 @@
+# ⚠️ ARCHIVED REPOSITORY
+
+**This repository is ARCHIVED as of January 31, 2026.**
+
+This repository served as the governance and execution control repository for the WebWaka platform from **January 26-28, 2026**, during the pre-migration period before the multi-repository topology was established.
+
+## Historical Context
+
+This repository was the "canonical execution brain" of WebWaka during its initial setup phase. It contained governance documents, phase definitions, verification strategy, STOP-SAFE protocol, and execution ledger.
+
+## Current Status
+
+On **January 30, 2026**, the WebWaka platform transitioned to a multi-repository topology. All governance authority was transferred to the official governance repository:
+
+**👉 Current Governance Repository:** [`webwaka-governance`](https://github.com/webwakaagent1/webwaka-governance)
+
+## Why This Repository Is Archived
+
+1. **Superseded:** All governance is now managed in `webwaka-governance`
+2. **Historical Value:** This repository contains valuable historical context from the platform's founding period
+3. **Avoid Confusion:** Keeping it active would create ambiguity about which repository is authoritative
+
+## For Current Platform Information
+
+- **Governance & Control Board:** [`webwaka-governance`](https://github.com/webwakaagent1/webwaka-governance)
+- **Master Control Board:** [View Document](https://github.com/webwakaagent1/webwaka-governance/blob/main/docs/governance/WEBWAKA_MASTER_CONTROL_BOARD.md)
+- **Platform Invariants:** [View Document](https://github.com/webwakaagent1/webwaka-governance/blob/main/docs/governance/WEBWAKA_MASTER_CONTROL_BOARD.md#1-never-break-invariants)
+
+---
+
+**Archived by:** Manus AI (Agentic Software Factory Transition Architect)  
+**Date:** January 31, 2026  
+**Authority:** Founder Authorization
+
+---
+
+# Original README (Historical Reference)
+
 # WebWaka Execution Control
 
 **Status:** 🔒 CANON-LOCKED  
